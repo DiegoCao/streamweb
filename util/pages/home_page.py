@@ -14,19 +14,8 @@ from ..functions.gui import load_st_table, write_st_end, create_st_button, show_
 def home_page():
     # TODO - Add opening background image
 
-    # file_ = open("util/data/background.gif", "rb")
-    # contents = file_.read()
-    # data_url = base64.b64encode(contents).decode("utf-8")
-    # file_.close()
 
-    # # st.markdown(
-    # #     f'<center><img src="data:image/gif;base64,{data_url}" alt="Background"></center>',
-    # #     unsafe_allow_html=True,
-    # # )
-
-    # components.html(f'<html><body><center><img src="data:image/gif;base64,{data_url}" alt="Background"></center></body></html>', width=200, height=200)
-    st.markdown('<center><img src="https://s3.bmp.ovh/imgs/2022/07/13/81adbd735f6aa968.gif" width=750></center>', unsafe_allow_html=True)
-    # st.image("https://s3.bmp.ovh/imgs/2022/07/13/81adbd735f6aa968.gif", width=750)
+    st.markdown('<center><img src="https://s3.bmp.ovh/imgs/2022/07/13/ea94a09608d23d21.gif" width=1000 height=600></center>', unsafe_allow_html=True)
     # change sidebar width
     st.markdown(
         """
