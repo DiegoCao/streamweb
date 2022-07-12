@@ -83,10 +83,11 @@ def write_st_end():
 
     st.markdown("---")
     st.markdown(
-        "Developed and Maintained by Yijie Shi, Hangrui Cao"
+        "Developed and Maintained by Yijie Shi, Hangrui Cao, and Xingjian Zhang"
     )
 
     st.markdown(f"Most Recently Deposited Entry {df[date_col].max()}")
+    st.markdown('<center><img src="https://s3.bmp.ovh/imgs/2022/07/13/a06dba7365c65177.png" width=200></center>', unsafe_allow_html=True)
 
 
 def reorder_st_cols(df, row, col):
