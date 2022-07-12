@@ -12,18 +12,18 @@
    limitations under the License.
 """
 
+from util.pages.member_page import member_page
+from util.pages.data_page import data_page
+from util.pages.overview_page import overview_page
+from util.pages.home_page import home_page
+from util.functions.path import get_file_path, get_dir_name, util_str, data_str
+from PIL import Image
+import streamlit as st
 import warnings
 
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
-import streamlit as st
-from PIL import Image
 
-from util.functions.path import get_file_path, get_dir_name, util_str, data_str
-
-from util.pages.home_page import home_page
-from util.pages.overview_page import overview_page
-from util.pages.data_page import data_page
 # from util.pages.pdb_page import pdb_page
 # from util.pages.conformation_page import conformation_page
 # from util.pages.mutation_page import mutation_page
@@ -47,7 +47,8 @@ class MultiApp:
             ),
         )
 
-        st.set_page_config(page_title="Energy Plus Demo", page_icon=img, layout="wide")
+        st.set_page_config(page_title="Energy Plus Demo",
+                           page_icon=img, layout="wide")
 
         st.sidebar.markdown("## Main Menu")
         app = st.sidebar.selectbox(
@@ -60,7 +61,8 @@ class MultiApp:
 app = MultiApp()
 
 app.add_app("Home Page", home_page)
-app.add_app("Database Overview", overview_page)
+app.add_app("Group Members", member_page)
+app.add_app("System Overview", overview_page)
 app.add_app("Result Visualization", data_page)
 # app.add_app("Search PDB", pdb_page)
 # app.add_app("Explore Conformations", conformation_page)
