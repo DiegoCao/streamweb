@@ -37,12 +37,12 @@ from .path import (
     data_str,
     functions_str,
 )
-from .lig import lig_col_lst 
+from .lig import lig_col_lst
 from .lst import res_to_lst, str_to_lst,  type_lst
 from .color import red_hex
-from .col import (rename_col_dict, date_col, nuc_class_col, match_class_col, prot_class_col, 
-                gene_class_col, interf_class_col, pocket_class_col, pdb_code_col, chainid_col, ion_lig_col, 
-                bound_prot_chainid_col, pharm_lig_col, mem_lig_col, pharm_class_col)
+from .col import (rename_col_dict, date_col, nuc_class_col, match_class_col, prot_class_col,
+                  gene_class_col, interf_class_col, pocket_class_col, pdb_code_col, chainid_col, ion_lig_col,
+                  bound_prot_chainid_col, pharm_lig_col, mem_lig_col, pharm_class_col)
 
 from ..constants.nuc import nuc_class_lst
 from ..constants.pharm import match_class_lst, pocket_class_lst, pharm_color_dict, none_pharm_name, other_pharm_name, sp2_name
@@ -68,6 +68,7 @@ trace_name = "Trace"
 standard_name = "Standard"
 aa_name = "Amino Acid"
 
+
 def write_st_end():
 
     df = load_table(
@@ -82,23 +83,23 @@ def write_st_end():
 
     st.markdown("---")
     st.markdown(
-        "Developed and Maintained by Mitchell Parker, Bulat Faezov, and Roland Dunbrack"
+        "Developed and Maintained by Yijie Shi, Hangrui Cao"
     )
-    st.markdown(
-        "[Dunbrack Lab](https://dunbrack.fccc.edu/retro/) - [Fox Chase Cancer Center](https://www.foxchase.org)"
-    )
+
     st.markdown(f"Most Recently Deposited Entry {df[date_col].max()}")
-    st.markdown("Copyright (c) 2022 Mitchell Isaac Parker")
+
 
 def reorder_st_cols(df, row, col):
 
     class_lst = list(class_order_dict.keys())
 
     if row in class_lst:
-        row_order = [x for x in class_order_dict[row] + ["All"] if x in list(df.index.values)] 
+        row_order = [x for x in class_order_dict[row] +
+                     ["All"] if x in list(df.index.values)]
 
     if col in class_lst:
-        col_order = [x for x in class_order_dict[col] + ["All"] if x in list(df.columns)] 
+        col_order = [x for x in class_order_dict[col] +
+                     ["All"] if x in list(df.columns)]
 
     if row in class_lst and col in class_lst:
         df = df.loc[row_order, col_order]
@@ -106,8 +107,9 @@ def reorder_st_cols(df, row, col):
         df = df.loc[:, col_order]
     elif row in class_lst and col not in class_lst:
         df = df.loc[row_order, :]
-    
+
     return df
+
 
 def get_st_file_path(st_file):
 
@@ -123,6 +125,7 @@ def save_st_file(st_file):
     with open(st_file_path, "wb") as file:
         file.write(st_file.getbuffer())
     return st_file_path
+
 
 def show_st_fig(fig, st_col=None):
 
@@ -158,16 +161,17 @@ def load_st_table(file_path, file_name=None, json_format=False):
         file_name = entry_table_file
 
     file_path = get_file_path(
-            file_name,
-            dir_path=get_dir_path(
-                dir_path=get_neighbor_path(file_path, pages_str, data_str)
-            ))
+        file_name,
+        dir_path=get_dir_path(
+            dir_path=get_neighbor_path(file_path, pages_str, data_str)
+        ))
 
     if json_format:
         return load_json(file_path)
     else:
         return load_table(file_path)
-   
+
+
 def mask_st_table(df, col_dict):
 
     mask_df = df.copy()
@@ -184,7 +188,8 @@ def mask_st_table(df, col_dict):
 def rename_st_cols(df, col_lst=None):
 
     if col_lst is None:
-        col_lst = [x for x in list(rename_col_dict.keys()) if x in list(df.columns)]
+        col_lst = [x for x in list(
+            rename_col_dict.keys()) if x in list(df.columns)]
 
     return df.loc[:, col_lst].rename(columns=rename_col_dict)
 
@@ -309,7 +314,8 @@ def show_st_3dmol(
     height=600,
 ):
 
-    view = py3Dmol.view(query=f"pdb:{pdb_code.lower()}", width=width, height=height)
+    view = py3Dmol.view(
+        query=f"pdb:{pdb_code.lower()}", width=width, height=height)
 
     view.setStyle(
         {
@@ -340,7 +346,6 @@ def show_st_3dmol(
         for reslabel in reslabel_lst:
             view.addResLabels(reslabel[0], reslabel[1])
 
-
     if zoom_dict is None:
         view.zoomTo()
     else:
@@ -353,21 +358,21 @@ def show_st_3dmol(
 
 
 def show_st_structure(df,
-                    mut_resids=None, stick_resids=None,
-                    label_muts=None, label_resids=False, label_ligs=False, label_prots=False, 
-                    cartoon_style="oval",
-                    cartoon_trans=1, surface_trans=0, mut_trans=0.5,
-                    mut_color=None, sw1_color=None, sw2_color=None,
-                    aa_scheme=False,
-                    spin_on=False,
-                    all_chains=False,
-                    zoom_resids=None,
-                    zoom=1.5,
-                    width=400,
-                    height=400,
-                    show_legend=True,
-                    legend_font_size="medium",
-                    st_col=None):
+                      mut_resids=None, stick_resids=None,
+                      label_muts=None, label_resids=False, label_ligs=False, label_prots=False,
+                      cartoon_style="oval",
+                      cartoon_trans=1, surface_trans=0, mut_trans=0.5,
+                      mut_color=None, sw1_color=None, sw2_color=None,
+                      aa_scheme=False,
+                      spin_on=False,
+                      all_chains=False,
+                      zoom_resids=None,
+                      zoom=1.5,
+                      width=400,
+                      height=400,
+                      show_legend=True,
+                      legend_font_size="medium",
+                      st_col=None):
 
     if sw1_color is None:
         sw1_color = loop_color_dict[sw1_name]
@@ -387,7 +392,7 @@ def show_st_structure(df,
     opacity = 0
     if all_chains:
         opacity = 0.75
-    
+
     pdb_code = df[pdb_code_col].iloc[0]
     chainid = df[chainid_col].iloc[0]
 
@@ -436,22 +441,22 @@ def show_st_structure(df,
             style_lst.append(
                 [
                     {"chain": chainid,
-                    "resi": stick_resid_lst,
-                    "elem": "C"},
+                     "resi": stick_resid_lst,
+                     "elem": "C"},
                     {"stick": {"colorscheme": "amino", "radius": 0.2}},
                 ]
-            ) 
+            )
             style_lst.append(
-                    [
-                        {"chain": chainid, "resi": stick_resid_lst},
-                        {"stick": {"radius": 0.2}},
-                    ]
-                )
+                [
+                    {"chain": chainid, "resi": stick_resid_lst},
+                    {"stick": {"radius": 0.2}},
+                ]
+            )
             surface_lst.append(
-            [
-                {"opacity": surface_trans,"colorscheme": "amino"},
-                {"chain": chainid, "resi": stick_resid_lst, "hetflag": False},
-            ]
+                [
+                    {"opacity": surface_trans, "colorscheme": "amino"},
+                    {"chain": chainid, "resi": stick_resid_lst, "hetflag": False},
+                ]
             )
         else:
             for stick_resid in stick_resid_lst:
@@ -463,22 +468,22 @@ def show_st_structure(df,
                     resid_color = sw2_color
 
                 style_lst.append(
-                [
-                    {
-                        "chain": chainid,
-                        "resi": stick_resid,
-                        "elem": "C",
-                    },
-                    {"stick": {"color": resid_color, "radius": 0.2}},
-                ]
-            )
+                    [
+                        {
+                            "chain": chainid,
+                            "resi": stick_resid,
+                            "elem": "C",
+                        },
+                        {"stick": {"color": resid_color, "radius": 0.2}},
+                    ]
+                )
 
                 style_lst.append(
                     [
                         {"chain": chainid, "resi": stick_resid},
                         {"stick": {"radius": 0.2}},
                     ]
-                )  
+                )
 
         for stick_resid in stick_resid_lst:
 
@@ -487,46 +492,45 @@ def show_st_structure(df,
                 if stick_resid in list(label_resids.keys()):
                     add_reslabel = label_resids[stick_resid]
 
-            if add_reslabel:   
+            if add_reslabel:
                 reslabel_lst.append(
-                        [
-                            {"chain": chainid,
-                            "resi": stick_resid},
-                            {
-                                "backgroundColor": "lightgray",
-                                "fontColor": "black",
-                                "backgroundOpacity": 0.5,
-                            },
-                        ]
-                    )
-
+                    [
+                        {"chain": chainid,
+                         "resi": stick_resid},
+                        {
+                            "backgroundColor": "lightgray",
+                            "fontColor": "black",
+                            "backgroundOpacity": 0.5,
+                        },
+                    ]
+                )
 
     if mut_resids is not None:
         for mut_resid in mut_resid_lst:
             style_lst.append(
-            [
-                {
-                    "chain": chainid,
-                    "resi": mut_resid,
-                    "elem": "C",
-                },
-                {"stick": {"color": mut_color, "radius": 0.2}},
-            ]
-        )
+                [
+                    {
+                        "chain": chainid,
+                        "resi": mut_resid,
+                        "elem": "C",
+                    },
+                    {"stick": {"color": mut_color, "radius": 0.2}},
+                ]
+            )
 
             style_lst.append(
                 [
                     {"chain": chainid, "resi": mut_resid},
                     {"stick": {"radius": 0.2}},
                 ]
-            )     
+            )
 
             surface_lst.append([
-                    
-                        {"opacity": mut_trans, "color": mut_color},
-                        {"chain": chainid, "resi": mut_resid},
-                    
-                ])
+
+                {"opacity": mut_trans, "color": mut_color},
+                {"chain": chainid, "resi": mut_resid},
+
+            ])
 
             add_reslabel = label_muts
             if type(label_muts) == dict:
@@ -535,17 +539,17 @@ def show_st_structure(df,
 
             if add_reslabel:
                 reslabel_lst.append(
-                        [
-                            {"chain": chainid,
-                            "resi": mut_resid},
-                            {
-                                "backgroundColor": "lightgray",
-                                "fontColor": "black",
-                                "backgroundOpacity": 0.5,
-                            },
-                        ]
-                    )
-            
+                    [
+                        {"chain": chainid,
+                         "resi": mut_resid},
+                        {
+                            "backgroundColor": "lightgray",
+                            "fontColor": "black",
+                            "backgroundOpacity": 0.5,
+                        },
+                    ]
+                )
+
     if not aa_scheme:
         for loop_name, loop_resids in loop_resid_dict.items():
 
@@ -601,11 +605,11 @@ def show_st_structure(df,
                 if lig_col != pharm_lig_col:
 
                     lig_sele = {
-                                "resn": lig,
-                            }
+                        "resn": lig,
+                    }
 
                     if lig_col != mem_lig_col:
-                         lig_sele["chain"] = chainid
+                        lig_sele["chain"] = chainid
 
                     style_lst.append(
                         [
@@ -623,7 +627,7 @@ def show_st_structure(df,
                 if type(label_ligs) == dict:
                     if lig in list(label_ligs.keys()):
                         add_reslabel = label_ligs[lig]
-                
+
                 if add_reslabel:
                     reslabel_lst.append(
                         [
@@ -772,48 +776,40 @@ def show_st_structure(df,
                 zoom=zoom,
                 width=width,
                 height=height,
-            )                 
+            )
         st_col.markdown(end_str, unsafe_allow_html=True)
 
     if show_legend:
         if aa_scheme:
             aa_type_dict = {
-                    'Acidic':['ASP','GLU'],
-                    'Basic':['LYS', 'ARG','HIS'],
-                    'Polar':['ASN','GLN','SER','THR', 'CYS'],
-                    'Nonpolar':['ILE', 'VAL', 'LEU', 'MET','PRO', 'GLY', 'ALA'],
-                    'Aromatic':['PHE', 'TYR', 'TRP'],
-                    }
+                'Acidic': ['ASP', 'GLU'],
+                'Basic': ['LYS', 'ARG', 'HIS'],
+                'Polar': ['ASN', 'GLN', 'SER', 'THR', 'CYS'],
+                'Nonpolar': ['ILE', 'VAL', 'LEU', 'MET', 'PRO', 'GLY', 'ALA'],
+                'Aromatic': ['PHE', 'TYR', 'TRP'],
+            }
 
-            aa_color_dict = {'ASP':'#E60A0A','GLU':'#E60A0A','CYS':'#E6E600','MET':'#E6E600',
-                            'LYS':'#145AFF','ARG':'#145AFF','SER':'#FA9600','THR':'#FA9600',
-                            'PHE':'#3232AA','TYR':'#3232AA','ASN':'#00DCDC','GLN':'#00DCDC',
-                            'GLY':'#C8C8C8','LEU':'#0F820F','VAL':'#0F820F','ILE':'#0F820F',
-                            'ALA':'#C8C8C8','TRP':'#B45AB4','HIS':'#8282D2','PRO':'#DC9682'}
+            aa_color_dict = {'ASP': '#E60A0A', 'GLU': '#E60A0A', 'CYS': '#E6E600', 'MET': '#E6E600',
+                             'LYS': '#145AFF', 'ARG': '#145AFF', 'SER': '#FA9600', 'THR': '#FA9600',
+                             'PHE': '#3232AA', 'TYR': '#3232AA', 'ASN': '#00DCDC', 'GLN': '#00DCDC',
+                             'GLY': '#C8C8C8', 'LEU': '#0F820F', 'VAL': '#0F820F', 'ILE': '#0F820F',
+                             'ALA': '#C8C8C8', 'TRP': '#B45AB4', 'HIS': '#8282D2', 'PRO': '#DC9682'}
 
             for aa_type, aa_lst in aa_type_dict.items():
 
-                legend_str = get_html_text({f"{aa_type}: ": "#31333F"}, font_weight='bold', font_size=legend_font_size)
+                legend_str = get_html_text(
+                    {f"{aa_type}: ": "#31333F"}, font_weight='bold', font_size=legend_font_size)
 
-                for i, aa_name in enumerate(aa_lst): 
+                for i, aa_name in enumerate(aa_lst):
 
-                    legend_str += get_html_text({aa_name:aa_color_dict[aa_name]}, font_size=legend_font_size)
+                    legend_str += get_html_text(
+                        {aa_name: aa_color_dict[aa_name]}, font_size=legend_font_size)
 
                     if i != len(aa_lst) - 1:
-                        legend_str += get_html_text({", ":"#31333F"}, font_size=legend_font_size)
+                        legend_str += get_html_text({", ": "#31333F"},
+                                                    font_size=legend_font_size)
 
                 if st_col is None:
                     st.markdown(legend_str, unsafe_allow_html=True)
                 else:
                     st_col.markdown(legend_str, unsafe_allow_html=True)
-       
-            
-            
-
-
-     
-
-
-
-
-    
