@@ -27,7 +27,7 @@ from ..functions.gui import load_st_table, write_st_end, create_st_button, show_
 
 def home_page():
 
-    left_col, right_col = st.columns(2)
+    left_col, right_col = st.columns(git 2)
 
     df = load_st_table(__file__)
 
