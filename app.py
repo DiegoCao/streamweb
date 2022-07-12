@@ -21,8 +21,8 @@ from PIL import Image
 
 from util.functions.path import get_file_path, get_dir_name, util_str, data_str
 
-from util.pages.home_page import home_page
-from util.pages.overview_page import overview_page
+# from util.pages.home_page import home_page
+# from util.pages.overview_page import overview_page
 from util.pages.data_page import data_page
 # from util.pages.pdb_page import pdb_page
 # from util.pages.conformation_page import conformation_page
@@ -59,8 +59,8 @@ class MultiApp:
 
 app = MultiApp()
 
-app.add_app("Home Page", home_page)
-app.add_app("Database Overview", overview_page)
+# app.add_app("Home Page", home_page)
+# app.add_app("Database Overview", overview_page)
 app.add_app("Result Visualization", data_page)
 # app.add_app("Search PDB", pdb_page)
 # app.add_app("Explore Conformations", conformation_page)
