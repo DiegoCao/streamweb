@@ -3,6 +3,13 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
+import pandas as pd
+import plotly.offline as py                    #保存图表，相当于plotly.plotly as py，同时增加了离线功能
+py.init_notebook_mode(connected=True)          #离线绘图时，需要额外进行初始化
+import plotly.graph_objs as go                 #创建各类图表
+import plotly.figure_factory as ff   
+import plotly.express as px
+
 import requests, os
 from gwpy.timeseries import TimeSeries
 from gwosc.locate import get_urls
@@ -15,19 +22,6 @@ import io
 from util.functions.gui import write_st_end
 import wavfile
 
-def make_audio_file(bp_data, t0=None):
-    # -- window data for gentle on/off
-    window = signal.windows.tukey(len(bp_data), alpha=1.0/10)
-    win_data = bp_data*window
-
-    # -- Normalize for 16 bit audio
-    win_data = np.int16(win_data/np.max(np.abs(win_data)) * 32767 * 0.9)
-
-    fs=1/win_data.dt.value
-    virtualfile = io.BytesIO()    
-    wavfile.write(virtualfile, int(fs), win_data)
-    
-    return virtualfile
 
 # Use the non-interactive Agg backend, which is recommended as a
 # thread-safe backend.
@@ -45,6 +39,34 @@ mpl.use("agg")
 from matplotlib.backends.backend_agg import RendererAgg
 _lock = RendererAgg.lock
 
+T = 52
+def staticPlot(weeks):
+    df = pd.read_csv("util/pages/newmtr.csv")
+    length = len(df)
+    X = np.linspace(0, 1, len(df))
+    start = weeks[0]
+    end = weeks[1]
+    # X = X[int(start*length/T):int(end*length/T)]
+    # y = pd.melt(df, id_vars=['Date/Time'], value_vars=['outer_T', 'left_T'])
+    plotdf = df[int(start*length/T):int(end*length/T)]
+    print(plotdf.columns[3:5])
+    fig = px.line(plotdf, x='Date/Time', y=plotdf.columns[2:5])
+    # labels = ['Outer Temprature', ]
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.caption("Date/Time vs Controled Air ")
+    fig2 = px.line(plotdf, x='Date/Time', y=plotdf.columns[4:6])
+    st.plotly_chart(fig2, use_container_width=True)
+
+    st.caption("Date/Time vs Evaluation Data")
+
+    fig3 = px.line(plotdf, x='Date/Time', y=plotdf.columns[7:10])
+    st.plotly_chart(fig3, use_container_width=True)
+
+def dynamicPlot():
+
+    pass
+
 def data_page():
 
     # -- Set page config
@@ -56,7 +78,7 @@ def data_page():
     detectorlist = ['H1','L1', 'V1']
 
     # Title the app
-    st.title('Gravitational Wave Quickview')
+    st.title('Data vs Time')
 
     st.markdown("""
     * Use the menu at left to select data and set plot parameters
@@ -84,8 +106,21 @@ def data_page():
     mode = st.sidebar.selectbox('How do you want to display data', ['Static', 'Dynamic'])   
 
     st.sidebar.markdown('## Weeks')
+    weeks = st.sidebar.slider('Weeks', min_value = 1, max_value = 52, value = (1,52),step = 1)
     df = pd.read_csv('util/pages/newmtr.csv')
     X = df['Date/Time']
+
+    
+    # Ytmp = df.columns['Outer_T']
+
+    if mode == 'Static':
+        with _lock:
+            staticPlot(weeks)
+    elif mode == 'Dynamic':
+        # with _lock:
+        pass
+
+
 
     # if mode == 'Static':
 
