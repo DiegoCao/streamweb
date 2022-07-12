@@ -39,7 +39,7 @@ def member_page():
              implementing the data pipeline and machine learning module in this project. (Moreover,
              he designed the team logo.) His powerlifting personal records is 330Lb (Squat), 352Lb
              (Deadlift), 224Lb (Bench Press). His goal for this year is to read a 1000Lb in total.
-             Welcome to visit my homepage : <a href="https://xingjian-zhang.notion.site">https://xingjian-zhang.notion.site</a>.</p>
+             Welcome to visit Xingjian Zhang's homepage : <a href="https://xingjian-zhang.notion.site">https://xingjian-zhang.notion.site</a>.</p>
              """, unsafe_allow_html=True
              )
     st.write("---")
