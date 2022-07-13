@@ -34,10 +34,14 @@ mpl.use("agg")
 from matplotlib.backends.backend_agg import RendererAgg
 _lock = RendererAgg.lock
 
+datalength = 7
 T = 52
 format = "%m-%d %H:%M:%S"
 
-df = pd.read_csv("util/pages/RL_new.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
+# df = pd.read_csv("util/pages/RL_new.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
+# easydf = pd.read_csv("util/pages/easy_agent_data.csv", parse_dates=['Date/Time'], infer_datetime_format=format)
+df = pd.read_csv("util/pages/RL_final.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
+cur_var = 1
 
 def staticPlot(weeks):
     length = len(df)
@@ -60,34 +64,66 @@ def staticPlot(weeks):
     # fig3 = px.line(plotdf, x='Date/Time', y=plotdf.columns[7:10])
     # st.plotly_chart(fig3, use_container_width=True)
 
+Parameters = ['West', 'East']
+
+
 
 
 def dynamicPlot(weeks):
+    st.experimental_memo.clear()
+    col1, col2 = st.columns([2, 1])
+    with col1:
+        check1 = st.checkbox("Easy Agent")
+    with col2:
+        check2 = st.checkbox("Our RL Agent")
+    if not check1 and not check2:
+        return 
+    
+    selectzone = st.multiselect('Select counties', Parameters, default=['West'])
+
     placeholder = st.empty()
-    Timestep = 200
-    for i in range(1, Timestep):
+    Timestep = 400
+    # start = cur_var
+    start = 1
+    for i in range(start, Timestep):
         with placeholder.container():
             length = len(df)
             X = np.linspace(0, 1, len(df))
-            # X = X[int(start*length/T):int(end*length/T)]
-            # y = pd.melt(df, id_vars=['Date/Time'], value_vars=['outer_T', 'left_T'])
             if i < 5:
                 plotdf = df[0:int(i*length/Timestep)]
+                # basedf = easydf[0:int(i*length/Timestep)]
             else:
                 plotdf = df[int((i-5)*length/Timestep):int(i*length/Timestep)]
+                # basedf = easydf[int((i-5)*length/Timestep):int(i*length/Timestep)]
 
-            fig = px.line(plotdf, x='Date/Time', y=plotdf.columns[5:6])
+            zonedf = df[[
+                'WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our',
+                'WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy'
+            ]]
 
+            subdf = df[['Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our',
+                    'Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy']]
+            # y=df.columns[5:6]+df.columns[14:15]
+
+            # print(y)
+            y_ = subdf.columns[0:2]
+            if check1 and not check2:
+                y_ = subdf.columns[1:2]
+            if check2 and not check1:
+                y_ = subdf.columns[0:1]
+            
+
+            fig = px.line(plotdf, x='Date/Time', y=y_)
             fig.update_xaxes(
                             tickangle=45,
                             dtick=24,
                             tickformat=format
                             )
+            # fig.addtrace(basedf, x = 'Date/Time', y=basedf.columms[5:6])
             st.plotly_chart(fig, use_container_width=True)
-            # st.write(fig)
-            time.sleep(0.5)
+            # cur_var += 1
+            time.sleep(0.8)
 
-        # st.write(fig)
 
     # labels = ['Outer Temprature', ]
     # # st.caption("Date/Time vs Controled Air ")
@@ -134,7 +170,7 @@ def data_page():
     #     return eventlist
         
     st.sidebar.markdown("## Display Mode")
-    mode = st.sidebar.selectbox('How do you want to display data', ['Dynamic', 'Static'])   
+    mode = st.sidebar.selectbox('How do you want to display data', [ 'Dynamic', 'Static'])   
 
     st.sidebar.markdown('## Weeks')
     weeks = st.sidebar.slider('Weeks', min_value = 1, max_value = 52, value = (1,52),step = 1)
@@ -153,6 +189,7 @@ def data_page():
         with _lock:
             dynamicPlot(weeks)
             write_st_end()
+
         
         pass
 
