@@ -10,7 +10,6 @@ py.init_notebook_mode(connected=True)
 import plotly.graph_objs as go                
 import plotly.figure_factory as ff   
 import plotly.express as px
-
 import requests, os
 from gwpy.timeseries import TimeSeries
 from gwosc.locate import get_urls
@@ -43,6 +42,10 @@ format = "%m-%d %H:%M:%S"
 df = pd.read_csv("util/pages/RL_final.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
 cur_var = 1
 
+if 'cur' not in st.session_state:
+    st.session_state['cur'] = 1
+
+
 def staticPlot(weeks):
     length = len(df)
     X = np.linspace(0, 1, len(df))
@@ -66,7 +69,14 @@ def staticPlot(weeks):
 
 Parameters = ['West', 'East']
 
-
+Medudict = {'West': ['WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy.',
+                    'WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our'
+                    ],
+            'East': [
+                    'EAST ZONE:Zone Air Temperature [C](TimeStep)_easy',
+                    'EAST ZONE:Zone Air Temperature [C](TimeStep)_our'
+                    ]
+            }
 
 
 def dynamicPlot(weeks):
@@ -82,26 +92,28 @@ def dynamicPlot(weeks):
     selectzone = st.multiselect('Select counties', Parameters, default=['West'])
 
     placeholder = st.empty()
-    Timestep = 400
+    Timestep = len(df)
+
     # start = cur_var
-    start = 1
+    start = st.session_state['cur']
     for i in range(start, Timestep):
         with placeholder.container():
             length = len(df)
             X = np.linspace(0, 1, len(df))
-            if i < 5:
+            if i < 60:
                 plotdf = df[0:int(i*length/Timestep)]
                 # basedf = easydf[0:int(i*length/Timestep)]
             else:
-                plotdf = df[int((i-5)*length/Timestep):int(i*length/Timestep)]
+                plotdf = df[int((i-60)*length/Timestep):int(i*length/Timestep)]
                 # basedf = easydf[int((i-5)*length/Timestep):int(i*length/Timestep)]
 
-            zonedf = df[[
+            zonedf = plotdf[[
                 'WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our',
                 'WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy'
             ]]
 
-            subdf = df[['Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our',
+
+            subdf = plotdf[['Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our',
                     'Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy']]
             # y=df.columns[5:6]+df.columns[14:15]
 
@@ -116,22 +128,15 @@ def dynamicPlot(weeks):
             fig = px.line(plotdf, x='Date/Time', y=y_)
             fig.update_xaxes(
                             tickangle=45,
-                            dtick=24,
+                            dtick=12,
                             tickformat=format
                             )
             # fig.addtrace(basedf, x = 'Date/Time', y=basedf.columms[5:6])
             st.plotly_chart(fig, use_container_width=True)
             # cur_var += 1
-            time.sleep(0.8)
-
-
-    # labels = ['Outer Temprature', ]
-    # # st.caption("Date/Time vs Controled Air ")
-    # fig2 = px.line(plotdf, x='Date/Time', y=plotdf.columns[4:6])
-    # st.plotly_chart(fig2, use_container_width=True)
-    # st.caption("Date/Time vs Evaluation Data")
-    # fig3 = px.line(plotdf, x='Date/Time', y=plotdf.columns[7:10])
-    # st.plotly_chart(fig3, use_container_width=True)
+            time.sleep(0.1)
+            st.session_state['cur'] += 1
+    st.session_state['cur'] = 1
 
 
 def data_page():
