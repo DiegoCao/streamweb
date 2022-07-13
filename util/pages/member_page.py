@@ -8,6 +8,21 @@ from ..functions.gui import load_st_table, write_st_end, create_st_button, show_
 
 
 def member_page():
+    st.markdown(
+        """
+    <style>
+    [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {
+    width: 300px;
+    }
+    [data-testid="stSidebar"][aria-expanded="false"] > div:first-child {
+    width: 300px;
+    margin-left: -300px;
+    }
+    </style>
+    """,
+        unsafe_allow_html=True
+    )
+
     img = Image.open(
         get_file_path(
             "bio.png",

@@ -1,3 +1,20 @@
+import os
+import requests
+import plotly.figure_factory as ff
+import plotly.graph_objs as go
+from matplotlib.backends.backend_agg import RendererAgg
+import matplotlib as mpl
+from streamlit import caching
+import wavfile
+from util.functions.gui import write_st_end
+import io
+import base64
+from copy import deepcopy
+from gwosc.api import fetch_event_json
+from gwosc import datasets
+from gwosc.locate import get_urls
+from gwpy.timeseries import TimeSeries
+import plotly.express as px
 from sqlite3 import Time
 import streamlit as st
 import pandas as pd
@@ -5,39 +22,24 @@ import numpy as np
 import matplotlib.pyplot as plt
 import time
 import pandas as pd
-import plotly.offline as py                    
-py.init_notebook_mode(connected=True)         
-import plotly.graph_objs as go                
-import plotly.figure_factory as ff   
-import plotly.express as px
+import plotly.offline as py
+py.init_notebook_mode(connected=True)
 
-import requests, os
-from gwpy.timeseries import TimeSeries
-from gwosc.locate import get_urls
-from gwosc import datasets
-from gwosc.api import fetch_event_json
-
-from copy import deepcopy
-import base64
-import io
-from util.functions.gui import write_st_end
-import wavfile
-from streamlit import caching
 
 # Use the non-interactive Agg backend, which is recommended as a
 # thread-safe backend.
 # See https://matplotlib.org/3.3.2/faq/howto_faq.html#working-with-threads.
-import matplotlib as mpl
 mpl.use("agg")
 
 
-from matplotlib.backends.backend_agg import RendererAgg
 _lock = RendererAgg.lock
 
 T = 52
 format = "%m-%d %H:%M:%S"
 
-df = pd.read_csv("util/pages/RL_new.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
+df = pd.read_csv("util/pages/RL_new.csv",
+                 parse_dates=['Date/Time'], infer_datetime_format=format)
+
 
 def staticPlot(weeks):
     length = len(df)
@@ -61,7 +63,6 @@ def staticPlot(weeks):
     # st.plotly_chart(fig3, use_container_width=True)
 
 
-
 def dynamicPlot(weeks):
     placeholder = st.empty()
     Timestep = 200
@@ -79,10 +80,10 @@ def dynamicPlot(weeks):
             fig = px.line(plotdf, x='Date/Time', y=plotdf.columns[5:6])
 
             fig.update_xaxes(
-                            tickangle=45,
-                            dtick=24,
-                            tickformat=format
-                            )
+                tickangle=45,
+                dtick=24,
+                tickformat=format
+            )
             st.plotly_chart(fig, use_container_width=True)
             # st.write(fig)
             time.sleep(0.5)
@@ -105,8 +106,23 @@ def data_page():
 
     # st.set_page_config(page_title=apptitle, page_icon=":eyeglasses:")
 
+    st.markdown(
+        """
+    <style>
+    [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {
+    width: 300px;
+    }
+    [data-testid="stSidebar"][aria-expanded="false"] > div:first-child {
+    width: 300px;
+    margin-left: -300px;
+    }
+    </style>
+    """,
+        unsafe_allow_html=True
+    )
+
     # -- Default detector list
-    detectorlist = ['H1','L1', 'V1']
+    detectorlist = ['H1', 'L1', 'V1']
 
     # Title the app
     st.title('Data vs Time')
@@ -116,9 +132,10 @@ def data_page():
     * Your plots will appear below
     """)
 
-    @st.cache(ttl=3600, max_entries=10)   #-- Magic command to cache data
+    @st.cache(ttl=3600, max_entries=10)  # -- Magic command to cache data
     def load_gw(t0, detector, fs=4096):
-        strain = TimeSeries.fetch_open_data(detector, t0-14, t0+14, sample_rate = fs, cache=False)
+        strain = TimeSeries.fetch_open_data(
+            detector, t0-14, t0+14, sample_rate=fs, cache=False)
         return strain
 
     # @st.cache(ttl=3600, max_entries=10)   #-- Magic command to cache data
@@ -132,16 +149,17 @@ def data_page():
     #     eventlist = list(eventset)
     #     eventlist.sort()
     #     return eventlist
-        
+
     st.sidebar.markdown("## Display Mode")
-    mode = st.sidebar.selectbox('How do you want to display data', ['Dynamic', 'Static'])   
+    mode = st.sidebar.selectbox(
+        'How do you want to display data', ['Dynamic', 'Static'])
 
     st.sidebar.markdown('## Weeks')
-    weeks = st.sidebar.slider('Weeks', min_value = 1, max_value = 52, value = (1,52),step = 1)
+    weeks = st.sidebar.slider('Weeks', min_value=1,
+                              max_value=52, value=(1, 52), step=1)
     df = pd.read_csv('util/pages/newmtr.csv')
     X = df['Date/Time']
 
-    
     # Ytmp = df.columns['Outer_T']
 
     if mode == 'Static':
@@ -153,13 +171,10 @@ def data_page():
         with _lock:
             dynamicPlot(weeks)
             write_st_end()
-        
+
         pass
 
-
-
     # if mode == 'Static':
-
 
     # # -- Get list of events
     # # eventlist = get_eventlist()
@@ -169,16 +184,16 @@ def data_page():
     #                                     ['By event name', 'By GPS'])
 
     # if select_event == 'By GPS':
-    #     # -- Set a GPS time:        
+    #     # -- Set a GPS time:
     #     str_t0 = st.sidebar.text_input('GPS Time', '1126259462.4')    # -- GW150914
     #     t0 = float(str_t0)
 
     #     st.sidebar.markdown("""
     #     Example times in the H1 detector:
-    #     * 1126259462.4    (GW150914) 
-    #     * 1187008882.4    (GW170817) 
+    #     * 1126259462.4    (GW150914)
+    #     * 1187008882.4    (GW170817)
     #     * 1128667463.0    (hardware injection)
-    #     * 1132401286.33   (Koi Fish Glitch) 
+    #     * 1132401286.33   (Koi Fish Glitch)
     #     """)
     # else:
     #     chosen_event = st.sidebar.selectbox('Select Event', event_list)
@@ -187,10 +202,9 @@ def data_page():
     #     detectorlist.sort()
     #     st.subheader(chosen_event)
     #     # st.write('GPS:', t0)
-        
+
     #     # -- Experiment to display masses
 
-        
     # #-- Choose detector as H1, L1, or V1
     # detector = st.sidebar.selectbox('Detector', detectorlist)
 
@@ -202,7 +216,6 @@ def data_page():
     #     fs = 16384
     #     maxband = 8000
 
-
     # # -- Create sidebar for plot controls
     # st.sidebar.markdown('## Set Plot Parameters')
     # dtboth = st.sidebar.slider('Time Range (seconds)', 0.1, 8.0, 1.0)  # min, max, default
@@ -211,7 +224,6 @@ def data_page():
     # st.sidebar.markdown('#### Whitened and band-passed data')
     # whiten = st.sidebar.checkbox('Whiten?', value=True)
     # freqrange = st.sidebar.slider('Band-pass frequency range (Hz)', min_value=10, max_value=maxband, value=(30,400))
-
 
     # # -- Create sidebar for Q-transform controls
     # st.sidebar.markdown('#### Q-tranform plot')
@@ -226,7 +238,7 @@ def data_page():
     # except:
     #     st.warning('{0} data are not available for time {1}.  Please try a different time and detector pair.'.format(detector, t0))
     #     st.stop()
-        
+
     # strain_load_state.text('Loading data...done!')
 
     # #-- Make a time series plot
@@ -245,7 +257,6 @@ def data_page():
     #     fig1 = strain.crop(cropstart, cropend).plot()
     #     #fig1 = cropped.plot()
     #     st.pyplot(fig1, clear_figure=True)
-
 
     # # -- Try whitened and band-passed plot
     # # -- Whiten and bandpass data
@@ -278,12 +289,11 @@ def data_page():
     # # -- Notes on whitening
     # with st.expander("See notes"):
     #     st.markdown("""
-    # * Whitening is a process that re-weights a signal, so that all frequency bins have a nearly equal amount of noise. 
+    # * Whitening is a process that re-weights a signal, so that all frequency bins have a nearly equal amount of noise.
     # * A band-pass filter uses both a low frequency cutoff and a high frequency cutoff, and only passes signals in the frequency band between these values.
     # See also:
     # * [Signal Processing Tutorial](https://share.streamlit.io/jkanner/streamlit-audio/main/app.py)
     # """)
-
 
     # st.subheader('Q-transform')
 
@@ -298,7 +308,6 @@ def data_page():
     #     ax.set_ylim(bottom=15)
     #     st.pyplot(fig4, clear_figure=True)
 
-
     # with st.expander("See notes"):
 
     #     st.markdown("""
@@ -306,7 +315,7 @@ def data_page():
     # * The x-axis shows time
     # * The y-axis shows frequency
     # The color scale shows the amount of “energy” or “signal power” in each time-frequency pixel.
-    # A parameter called “Q” refers to the quality factor.  A higher quality factor corresponds to a larger number of cycles in each time-frequency pixel.  
+    # A parameter called “Q” refers to the quality factor.  A higher quality factor corresponds to a larger number of cycles in each time-frequency pixel.
     # For gravitational-wave signals, binary black holes are most clear with lower Q values (Q = 5-20), where binary neutron star mergers work better with higher Q values (Q = 80 - 120).
     # See also:
     # * [GWpy q-transform](https://gwpy.github.io/docs/stable/examples/timeseries/qscan.html)
@@ -314,12 +323,10 @@ def data_page():
     # * [Shourov Chatterji PhD Thesis](https://dspace.mit.edu/handle/1721.1/34388)
     # """)
 
-
     # st.subheader("About this app")
     # st.markdown("""
     # This app displays data from LIGO, Virgo, and GEO downloaded from
     # the Gravitational Wave Open Science Center at https://gw-openscience.org .
-    # You can see how this works in the [Quickview Jupyter Notebook](https://github.com/losc-tutorial/quickview) or 
+    # You can see how this works in the [Quickview Jupyter Notebook](https://github.com/losc-tutorial/quickview) or
     # [see the code](https://github.com/jkanner/streamlit-dataview).
     # """)
-
