@@ -14,7 +14,6 @@ from ..functions.gui import load_st_table, write_st_end, create_st_button, show_
 def home_page():
     # TODO - Add opening background image
 
-
     st.markdown('<center><img src="https://s3.bmp.ovh/imgs/2022/07/13/ea94a09608d23d21.gif" width=1000 height=600></center>', unsafe_allow_html=True)
     # change sidebar width
     st.markdown(
@@ -92,7 +91,6 @@ def home_page():
 
     st.markdown("---")
 
-
     st.markdown(
         """
         ## Summary
@@ -108,27 +106,27 @@ def home_page():
     )
 
     st.markdown("---")
-    left_col, right_col = st.columns([1, 2])
+    left_col, right_col = st.columns(2)
 
     img = Image.open(
         get_file_path(
-            "diagram.png",
+            "diag.png",
             dir_path=get_neighbor_path(__file__, pages_str, data_str),
         )
     )
 
-    right_col.image(img, width=600, output_format="PNG", caption="Concept Diagram")
+    right_col.image(img, width=600, output_format="PNG",
+                    caption="Concept Diagram")
 
-    left_col.markdown( # TODO - update usage
+    left_col.markdown(  # TODO - update usage
         """
         ## Usage
 
         <p style="font-size: 22px;">To the left, is a dropdown main menu for navigating to 
         each page of our product:</p>
-        <p style="font-size: 20px;">-&nbsp <b>Home Page:</b> We are here!</p>
-        <p style="font-size: 20px;">-&nbsp <b>Group Members:</b> Profile of group members</p>
-        <p style="font-size: 20px;">-&nbsp <b>System Overview:</b> Overview of the System</p>
-        <p style="font-size: 20px;">-&nbsp <b>Result Visualization</b></p>
+        <p style="font-size: 20px;">-&nbsp <b>Home Page:</b> We are here! This page is an overview that shows basic information of the project <i>Real-time Carbon Emission Evaluation for Future Low-Carbon Buildings</i>. The aim of this project is to lower the carbon emssion rate of buildings and at the same time ensures the human comfort of people inside.</p>
+        <p style="font-size: 20px;">-&nbsp <b>Group Members:</b>The Group member page shows background of each group member and also the fields that we are interested in. Feel free to contact us if you have any questions.</p>
+        <p style="font-size: 20px;">-&nbsp <b>Result Visualization:</b> The Visualization page includes interactive data charts. From these chart you can get line charts about indoor/outdoor temperature, carbon emission rate. You can adjust the time scale to see the change in different time period. We also have static chart and dynamic chart for you to choose. Let's have a try.</p>
         
         """, unsafe_allow_html=True
     )
