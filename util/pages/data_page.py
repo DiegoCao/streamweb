@@ -1,12 +1,13 @@
+from sqlite3 import Time
 import streamlit as st
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-
+import time
 import pandas as pd
-import plotly.offline as py                    #保存图表，相当于plotly.plotly as py，同时增加了离线功能
-py.init_notebook_mode(connected=True)          #离线绘图时，需要额外进行初始化
-import plotly.graph_objs as go                 #创建各类图表
+import plotly.offline as py                    
+py.init_notebook_mode(connected=True)         
+import plotly.graph_objs as go                
 import plotly.figure_factory as ff   
 import plotly.express as px
 
@@ -21,7 +22,7 @@ import base64
 import io
 from util.functions.gui import write_st_end
 import wavfile
-
+from streamlit import caching
 
 # Use the non-interactive Agg backend, which is recommended as a
 # thread-safe backend.
@@ -29,19 +30,16 @@ import wavfile
 import matplotlib as mpl
 mpl.use("agg")
 
-##############################################################################
-# Workaround for the limited multi-threading support in matplotlib.
-# Per the docs, we will avoid using `matplotlib.pyplot` for figures:
-# https://matplotlib.org/3.3.2/faq/howto_faq.html#how-to-use-matplotlib-in-a-web-application-server.
-# Moreover, we will guard all operations on the figure instances by the
-# class-level lock in the Agg backend.
-##############################################################################
+
 from matplotlib.backends.backend_agg import RendererAgg
 _lock = RendererAgg.lock
 
 T = 52
+format = "%m-%d %H:%M:%S"
+
+df = pd.read_csv("util/pages/RL_new.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
+
 def staticPlot(weeks):
-    df = pd.read_csv("util/pages/newmtr.csv")
     length = len(df)
     X = np.linspace(0, 1, len(df))
     start = weeks[0]
@@ -49,23 +47,56 @@ def staticPlot(weeks):
     # X = X[int(start*length/T):int(end*length/T)]
     # y = pd.melt(df, id_vars=['Date/Time'], value_vars=['outer_T', 'left_T'])
     plotdf = df[int(start*length/T):int(end*length/T)]
-    print(plotdf.columns[3:5])
-    fig = px.line(plotdf, x='Date/Time', y=plotdf.columns[2:5])
+    # print(plotdf.columns[3:5])
+    fig = px.line(plotdf, x='Date/Time', y=plotdf.columns[5:6])
     # labels = ['Outer Temprature', ]
     st.plotly_chart(fig, use_container_width=True)
 
-    st.caption("Date/Time vs Controled Air ")
-    fig2 = px.line(plotdf, x='Date/Time', y=plotdf.columns[4:6])
-    st.plotly_chart(fig2, use_container_width=True)
+    # st.caption("Date/Time vs Controled Air ")
+    # fig2 = px.line(plotdf, x='Date/Time', y=plotdf.columns[4:6])
+    # st.plotly_chart(fig2, use_container_width=True)
 
-    st.caption("Date/Time vs Evaluation Data")
+    # # st.caption("Date/Time vs Evaluation Data")
+    # fig3 = px.line(plotdf, x='Date/Time', y=plotdf.columns[7:10])
+    # st.plotly_chart(fig3, use_container_width=True)
 
-    fig3 = px.line(plotdf, x='Date/Time', y=plotdf.columns[7:10])
-    st.plotly_chart(fig3, use_container_width=True)
 
-def dynamicPlot():
 
-    pass
+def dynamicPlot(weeks):
+    placeholder = st.empty()
+    Timestep = 200
+    for i in range(1, Timestep):
+        with placeholder.container():
+            length = len(df)
+            X = np.linspace(0, 1, len(df))
+            # X = X[int(start*length/T):int(end*length/T)]
+            # y = pd.melt(df, id_vars=['Date/Time'], value_vars=['outer_T', 'left_T'])
+            if i < 5:
+                plotdf = df[0:int(i*length/Timestep)]
+            else:
+                plotdf = df[int((i-5)*length/Timestep):int(i*length/Timestep)]
+
+            fig = px.line(plotdf, x='Date/Time', y=plotdf.columns[5:6])
+
+            fig.update_xaxes(
+                            tickangle=45,
+                            dtick=24,
+                            tickformat=format
+                            )
+            st.plotly_chart(fig, use_container_width=True)
+            # st.write(fig)
+            time.sleep(0.5)
+
+        # st.write(fig)
+
+    # labels = ['Outer Temprature', ]
+    # # st.caption("Date/Time vs Controled Air ")
+    # fig2 = px.line(plotdf, x='Date/Time', y=plotdf.columns[4:6])
+    # st.plotly_chart(fig2, use_container_width=True)
+    # st.caption("Date/Time vs Evaluation Data")
+    # fig3 = px.line(plotdf, x='Date/Time', y=plotdf.columns[7:10])
+    # st.plotly_chart(fig3, use_container_width=True)
+
 
 def data_page():
 
@@ -103,7 +134,7 @@ def data_page():
     #     return eventlist
         
     st.sidebar.markdown("## Display Mode")
-    mode = st.sidebar.selectbox('How do you want to display data', ['Static', 'Dynamic'])   
+    mode = st.sidebar.selectbox('How do you want to display data', ['Dynamic', 'Static'])   
 
     st.sidebar.markdown('## Weeks')
     weeks = st.sidebar.slider('Weeks', min_value = 1, max_value = 52, value = (1,52),step = 1)
@@ -116,8 +147,13 @@ def data_page():
     if mode == 'Static':
         with _lock:
             staticPlot(weeks)
+            write_st_end()
+
     elif mode == 'Dynamic':
-        # with _lock:
+        with _lock:
+            dynamicPlot(weeks)
+            write_st_end()
+        
         pass
 
 
@@ -287,4 +323,3 @@ def data_page():
     # [see the code](https://github.com/jkanner/streamlit-dataview).
     # """)
 
-    # write_st_end()
