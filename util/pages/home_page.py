@@ -58,28 +58,27 @@ def home_page():
     for link_text, link_url in paper_link_dict.items():
         create_st_button(link_text, link_url, st_col=st.sidebar)
 
-    community_link_dict = {
-        "NCI RAS Initiative": "https://www.cancer.gov/research/key-initiatives/ras",
-        "KRAS Kickers": "https://www.kraskickers.org",
-        "RASopathies Network": "https://rasopathiesnet.org",
-    }
+    # community_link_dict = {
+    #     "NCI RAS Initiative": "https://www.cancer.gov/research/key-initiatives/ras",
+    #     "KRAS Kickers": "https://www.kraskickers.org",
+    #     "RASopathies Network": "https://rasopathiesnet.org",
+    # }
 
-    st.sidebar.markdown("## Community-Related Links")
-    for link_text, link_url in community_link_dict.items():
-        create_st_button(link_text, link_url, st_col=st.sidebar)
+    # st.sidebar.markdown("## Community-Related Links")
+    # for link_text, link_url in community_link_dict.items():
+    #     create_st_button(link_text, link_url, st_col=st.sidebar)
 
     software_link_dict = {
         "EnergyPlus": "https://energyplus.net/",
         "DesignBuilder": "https://designbuilder.co.uk/",
-        "Streamlit": "https://streamlit.io",
-        "OpenAI Baselines": "https://github.com/openai/baselines"
+        "OpenAI_Baselines": "https://github.com/openai/baselines"
     }
 
     st.sidebar.markdown("## Software-Related Links")
-    link_1_col, link_2_col, link_3_col = st.sidebar.columns(3)
+    link_1_col, link_2_col = st.sidebar.columns(2)
 
     i = 0
-    link_col_dict = {0: link_1_col, 1: link_2_col, 2: link_3_col}
+    link_col_dict = {0: link_1_col, 1: link_2_col}
     for link_text, link_url in software_link_dict.items():
 
         st_col = link_col_dict[i]
@@ -100,7 +99,6 @@ def home_page():
         system, as the basis for evaluating the renewable energy solutions for future low-carbon buildings. 
         As a long-term direction, the project aims to design and engineer future low-carbon buildings for rural vitalization.
         Students are expected to work closely with the mentors to deliver the project deliverables.</p>
-
         Details of our codebase are provided in the [*Github Repo*]().
         """, unsafe_allow_html=True
     )
@@ -121,7 +119,6 @@ def home_page():
     left_col.markdown(  # TODO - update usage
         """
         ## Usage
-
         <p style="font-size: 22px;">To the left, is a dropdown main menu for navigating to 
         each page of our product:</p>
         <p style="font-size: 20px;">-&nbsp <b>Home Page:</b> We are here! This page is an overview that shows basic information of the project <i>Real-time Carbon Emission Evaluation for Future Low-Carbon Buildings</i>. The aim of this project is to lower the carbon emssion rate of buildings and at the same time ensures the human comfort of people inside.</p>
@@ -137,14 +134,12 @@ def home_page():
     left_info_col.markdown(
         f"""
         ## Authors
-
         <p style="font-size: 20px;"><b>Hangrui Cao</b>&nbsp(<a href="mailto:caohangrui@sjtu.edu.cn">caohangrui@sjtu.edu.cn</a>)</p>
         <p style="font-size: 20px;"><b>Jiafeng Chen</b>&nbsp(<a href="mailto:wynnwy@sjtu.edu.cn">wynnwy@sjtu.edu.cn</a>)</p>
         <p style="font-size: 20px;"><b>Wenbin Ouyang</b>&nbsp(<a href="mailto:ouyangwenbin@sjtu.edu.cn">ouyangwenbin@sjtu.edu.cn</a>)</p>
         <p style="font-size: 20px;"><b>Yijie Shi</b>&nbsp(<a href="mailto:StevenShi2018@sjtu.edu.cn">StevenShi2018@sjtu.edu.cn</a>)</p>
         <p style="font-size: 20px;"><b>Xingjian Zhang</b>&nbsp(<a href="mailto:xingjian_zhang@sjtu.edu.cn">xingjian_zhang@sjtu.edu.cn</a>)</p>
         
-
         """,
         unsafe_allow_html=True,
     )
@@ -152,7 +147,6 @@ def home_page():
     right_info_col.markdown(
         """
         ## Sponsor
-
         <p style="font-size: 20px;"><b>Dezhi Zhou</b>&nbsp(<a href="mailto:dezhi.zhou@sjtu.edu.cn">dezhi.zhou@sjtu.edu.cn</a>)</p>
          """, unsafe_allow_html=True
     )
@@ -160,7 +154,6 @@ def home_page():
     right_info_col.markdown(
         """
         ## Instructor
-
         <p style="font-size: 20px;"><b>Yulian He</b>&nbsp(<a href="mailto:yulian.he@sjtu.edu.cn">yulian.he@sjtu.edu.cn</a>)</p>
          """, unsafe_allow_html=True
     )
