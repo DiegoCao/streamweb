@@ -54,6 +54,12 @@ def staticPlot(weeks):
     # X = X[int(start*length/T):int(end*length/T)]
     # y = pd.melt(df, id_vars=['Date/Time'], value_vars=['outer_T', 'left_T'])
     plotdf = df[int(start*length/T):int(end*length/T)]
+    plotdf.rename({
+        "Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our":
+        "CO2 Emission Mass (kg/h) of Our Method",
+        "Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy":
+        "CO2 Emission Mass (kg/h) of Easy Agent"
+    }, inplace=True)
     # print(plotdf.columns[3:5])
     fig = px.line(plotdf, x='Date/Time', y=plotdf.columns[5:6])
     # labels = ['Outer Temprature', ]
@@ -67,7 +73,6 @@ def staticPlot(weeks):
     # fig3 = px.line(plotdf, x='Date/Time', y=plotdf.columns[7:10])
     # st.plotly_chart(fig3, use_container_width=True)
 
-Parameters = ['West', 'East']
 
 Medudict = {'West': ['WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy.',
                     'WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our'
@@ -78,64 +83,144 @@ Medudict = {'West': ['WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature
                     ]
             }
 
+def gety2index(check1, check2, selectzone, zonedf):
+    west = False
+    east = False
+    if "West Temperature" in selectzone:
+        west = True
+    if "East Temperature" in selectzone:
+        east = True
+    if check1 and check2:
+        if west and east:
+            return zonedf.columns[0:4]
+        elif west and not east:
+            return zonedf.columns[0:2]
+        elif east and not west:
+            return zonedf.columns[2:4]
+        else:
+            return None
+
+    if not check2:
+        if west and east:
+            newdf = zonedf[["East Out Temperature (C) of Easy Agent","West Out Temperature (C) of Easy Agent"]]
+            return newdf.columns[0:2]
+        elif west:
+            return zonedf.columns[1:2]
+        elif east:
+            return zonedf.columns[3:4]
+    if not check1:
+        if west and east:
+            newdf = zonedf[["East Out Temperature (C) of Our","West Out Temperature (C) of Our"]]
+            return newdf.columns[0:2]
+        elif west:
+            return zonedf.columns[0:1]
+        elif east:
+            return zonedf.columns[2:3]
+
 
 def dynamicPlot(weeks):
+    st.title("Real-Time HVAC Dashboard")
+    move_length = 160
     st.experimental_memo.clear()
-    col1, col2 = st.columns([2, 1])
-    with col1:
-        check1 = st.checkbox("Easy Agent")
-    with col2:
-        check2 = st.checkbox("Our RL Agent")
+    Parameters = ['West Temperature', 'East Temperature']
+    check1 = st.checkbox("Easy Agent")
+    check2 = st.checkbox("Our RL Agent")
+    selectzone = st.multiselect('Select Temperature Parameters  ', Parameters, default=['West Temperature'])
+    placeholder = st.empty()
+    Timestep = len(df)
+    # start = cur_var
+    start = st.session_state['cur']
+
     if not check1 and not check2:
         return 
     
-    selectzone = st.multiselect('Select counties', Parameters, default=['West'])
 
-    placeholder = st.empty()
-    Timestep = len(df)
-
-    # start = cur_var
-    start = st.session_state['cur']
     for i in range(start, Timestep):
         with placeholder.container():
+            
             length = len(df)
-            X = np.linspace(0, 1, len(df))
-            if i < 60:
+            kpi1, kpi2 = st.columns(2)
+
+            if i < move_length:
                 plotdf = df[0:int(i*length/Timestep)]
                 # basedf = easydf[0:int(i*length/Timestep)]
             else:
-                plotdf = df[int((i-60)*length/Timestep):int(i*length/Timestep)]
-                # basedf = easydf[int((i-5)*length/Timestep):int(i*length/Timestep)]
+                plotdf = df[int((i-move_length)*length/Timestep):int(i*length/Timestep)]
 
+            kpi1.metric(
+                label = "Our Carbon CO2 Emission Rate Running Average (kg/h)",
+                value = np.average(plotdf['Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our'])
+            )
+            kpi2.metric(
+                label = "Easy Agent CO2 Emisson Data Running Average (kg/h)",
+                value = np.average(plotdf['Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy'
+                ])
+            )
+
+
+                # basedf = easydf[int((i-5)*length/Timestep):int(i*length/Timestep)]
             zonedf = plotdf[[
                 'WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our',
-                'WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy'
+                'WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy',
+                'EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our',
+                'EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy',
+                'Date/Time'
             ]]
-
+            zonedf.rename(columns={
+                "WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our":
+                "West Out Temperature (C) of Our",
+                "WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy":
+                "West Out Temperature (C) of Easy Agent",
+                "EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our":
+                "East Out Temperature (C) of Our",
+                "EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy":
+                "East Out Temperature (C) of Easy Agent"
+            }, inplace=True)
 
             subdf = plotdf[['Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our',
-                    'Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy']]
-            # y=df.columns[5:6]+df.columns[14:15]
+                    'Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy',
+                    'Date/Time']]
+            subdf.rename(columns={"Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our":
+                    "CO2 Emission Mass (kg/h) of Our Method",
+                    "Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy":
+                    "CO2 Emission Mass (kg/h) of Easy Agent"
+                    }, inplace = True)
 
-            # print(y)
+
+
             y_ = subdf.columns[0:2]
             if check1 and not check2:
                 y_ = subdf.columns[1:2]
             if check2 and not check1:
                 y_ = subdf.columns[0:1]
             
-
-            fig = px.line(plotdf, x='Date/Time', y=y_)
+            
+            fig = px.line(subdf, x='Date/Time', y=y_)
             fig.update_xaxes(
                             tickangle=45,
                             dtick=12,
-                            tickformat=format
+                            tickformat=format,
+                            range=[0,move_length],
+                            title = "Real-time CO2 Emission Equivalent Mass Monitor"
                             )
-            # fig.addtrace(basedf, x = 'Date/Time', y=basedf.columms[5:6])
+            fig.update_yaxes(range=[0,30])
+            # fig.addtrace(bbasedf, x = 'Date/Time', y=basedf.columms[5:6])
             st.plotly_chart(fig, use_container_width=True)
-            # cur_var += 1
+
+        
+            y2 = gety2index(check1, check2, selectzone, zonedf)
+            fig2 = px.line(zonedf, x='Date/Time', y=y2)
+            fig2.update_xaxes(
+                tickangle=45,
+                dtick=12,
+                tickformat=format,
+                range=[0,move_length],
+                title = "Real-time West/East Zone Temperature (Action of HVAC) Monitor"
+                )
+            st.plotly_chart(fig2, use_container_width=True)
             time.sleep(0.1)
             st.session_state['cur'] += 1
+
     st.session_state['cur'] = 1
 
 
@@ -150,40 +235,23 @@ def data_page():
     detectorlist = ['H1','L1', 'V1']
 
     # Title the app
-    st.title('Data vs Time')
 
-    st.markdown("""
-    * Use the menu at left to select data and set plot parameters
-    * Your plots will appear below
-    """)
+    if 'cur' not in st.session_state:
+        st.session_state['cur'] = 1
 
     @st.cache(ttl=3600, max_entries=10)   #-- Magic command to cache data
     def load_gw(t0, detector, fs=4096):
         strain = TimeSeries.fetch_open_data(detector, t0-14, t0+14, sample_rate = fs, cache=False)
         return strain
 
-    # @st.cache(ttl=3600, max_entries=10)   #-- Magic command to cache data
-    # def get_eventlist():
-    #     allevents = datasets.find_datasets(type='events')
-    #     eventset = set()
-    #     for ev in allevents:
-    #         name = fetch_event_json(ev)['events'][ev]['commonName']
-    #         if name[0:2] == 'GW':
-    #             eventset.add(name)
-    #     eventlist = list(eventset)
-    #     eventlist.sort()
-    #     return eventlist
         
     st.sidebar.markdown("## Display Mode")
-    mode = st.sidebar.selectbox('How do you want to display data', [ 'Dynamic', 'Static'])   
+    mode = st.sidebar.selectbox('How do you want to display data', [ 'Static', 'Dynamic' ])   
 
     st.sidebar.markdown('## Weeks')
     weeks = st.sidebar.slider('Weeks', min_value = 1, max_value = 52, value = (1,52),step = 1)
     df = pd.read_csv('util/pages/newmtr.csv')
     X = df['Date/Time']
-
-    
-    # Ytmp = df.columns['Outer_T']
 
     if mode == 'Static':
         with _lock:
@@ -195,7 +263,6 @@ def data_page():
             dynamicPlot(weeks)
             write_st_end()
 
-        
         pass
 
 
