@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import streamlit as st
+import streamlit.components.v1 as components
 from PIL import Image
+import base64
 
 from ..functions.table import mask_equal
 from ..functions.col import pdb_code_col
@@ -10,6 +12,25 @@ from ..functions.gui import load_st_table, write_st_end, create_st_button, show_
 
 
 def home_page():
+    # TODO - Add opening background image
+
+
+    st.markdown('<center><img src="https://s3.bmp.ovh/imgs/2022/07/13/ea94a09608d23d21.gif" width=1000 height=600></center>', unsafe_allow_html=True)
+    # change sidebar width
+    st.markdown(
+        """
+    <style>
+    [data-testid="stSidebar"][aria-expanded="true"] > div:first-child {
+    width: 300px;
+    }
+    [data-testid="stSidebar"][aria-expanded="false"] > div:first-child {
+    width: 300px;
+    margin-left: -300px;
+    }
+    </style>
+    """,
+        unsafe_allow_html=True
+    )
 
     left_col, right_col = st.columns([1, 2])
 
@@ -51,13 +72,8 @@ def home_page():
     software_link_dict = {
         "EnergyPlus": "https://energyplus.net/",
         "DesignBuilder": "https://designbuilder.co.uk/",
-        "Pandas": "https://pandas.pydata.org",
-        "NumPy": "https://numpy.org",
-        "SciPy": "https://scipy.org",
-        "Sklearn": "https://scikit-learn.org/stable/",
-        "Matplotlib": "https://matplotlib.org",
-        "Seaborn": "https://seaborn.pydata.org",
         "Streamlit": "https://streamlit.io",
+        "OpenAI Baselines": "https://github.com/openai/baselines"
     }
 
     st.sidebar.markdown("## Software-Related Links")
@@ -76,6 +92,7 @@ def home_page():
 
     st.markdown("---")
 
+
     st.markdown(
         """
         ## Summary
@@ -86,13 +103,7 @@ def home_page():
         As a long-term direction, the project aims to design and engineer future low-carbon buildings for rural vitalization.
         Students are expected to work closely with the mentors to deliver the project deliverables.</p>
 
-        <p style="font-size: 30px;">TODO</p>
-        Details of our work are 
-        provided in the [*Cancer Research*](https://aacrjournals.org/cancerres/article/doi/10.1158/0008-5472.CAN-22-0804/696349/Delineating-The-RAS-Conformational-LandscapeThe)
-        paper, **Delineating The RAS Conformational Landscape**.
-        We hope that researchers will use 
-        *Rascore* to gain novel insights into RAS biology and 
-        drug discovery. 
+        Details of our codebase are provided in the [*Github Repo*]().
         """, unsafe_allow_html=True
     )
 
@@ -106,9 +117,9 @@ def home_page():
         )
     )
 
-    right_col.image(img, width=680, output_format="PNG")
+    right_col.image(img, width=600, output_format="PNG", caption="Concept Diagram")
 
-    left_col.markdown(
+    left_col.markdown( # TODO - update usage
         """
         ## Usage
 
@@ -128,7 +139,6 @@ def home_page():
     left_info_col.markdown(
         f"""
         ## Authors
-        <p style="font-size: 20px;">Please feel free to contact us with any issues, comments, or questions.</p>
 
         <p style="font-size: 20px;"><b>Hangrui Cao</b>&nbsp(<a href="mailto:caohangrui@sjtu.edu.cn">caohangrui@sjtu.edu.cn</a>)</p>
         <p style="font-size: 20px;"><b>Jiafeng Chen</b>&nbsp(<a href="mailto:wynnwy@sjtu.edu.cn">wynnwy@sjtu.edu.cn</a>)</p>

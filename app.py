@@ -24,9 +24,7 @@ import warnings
 warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
-from util.pages.home_page import home_page
 # from util.pages.overview_page import overview_page
-from util.pages.data_page import data_page
 # from util.pages.pdb_page import pdb_page
 # from util.pages.conformation_page import conformation_page
 # from util.pages.mutation_page import mutation_page
@@ -63,8 +61,9 @@ class MultiApp:
 
 app = MultiApp()
 
-# app.add_app("Home Page", home_page)
-# app.add_app("Database Overview", overview_page)
+app.add_app("Home Page", home_page)
+app.add_app("Group members", member_page)
+app.add_app("System Overview", overview_page)
 app.add_app("Result Visualization", data_page)
 # app.add_app("Search PDB", pdb_page)
 # app.add_app("Explore Conformations", conformation_page)
