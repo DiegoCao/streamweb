@@ -66,11 +66,13 @@ def staticPlot(weeks):
     st.markdown("""
         Use Checkbox and Select menu to select the data you want to display.
     """)
-
+    placeholder = st.empty()
     Parameters = ['West Temperature', 'East Temperature']
-    check1 = st.checkbox("Easy Agent")
+    eval = ['CO2', 'CO', 'SO2']
+    check1 = st.checkbox("Baseline")
     check2 = st.checkbox("Our RL Agent")
-    selectzone = st.multiselect('Select Temperature Parameters  ', Parameters, default=['West Temperature'])
+    selectzone = st.multiselect('Evaluation Parameters', eval, default=['CO2'])
+    selectzone = st.multiselect('Action Temperature Parameters  ', Parameters, default=['West Temperature'])
     length = len(df)
     X = np.linspace(0, 1, len(df))
     start = weeks[0]
@@ -84,7 +86,7 @@ def staticPlot(weeks):
     carbondf.rename(columns={"Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our":
                     "CO2 Emission Mass (kg/h) of Our Method",
                     "Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy":
-                    "CO2 Emission Mass (kg/h) of Easy Agent"
+                    "CO2 Emission Mass (kg/h) of Baseline"
                     }, inplace = True)
 
     zonedf= df[[
@@ -98,11 +100,11 @@ def staticPlot(weeks):
         "WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our":
         "West Out Temperature (C) of Our",
         "WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy":
-        "West Out Temperature (C) of Easy Agent",
+        "West Out Temperature (C) of Baseline",
         "EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our":
         "East Out Temperature (C) of Our",
         "EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy":
-        "East Out Temperature (C) of Easy Agent"
+        "East Out Temperature (C) of Baseline"
     }, inplace=True)
     zonedf = zonedf[int(start*length/T):int(end*length/T)]
 
@@ -112,30 +114,31 @@ def staticPlot(weeks):
     elif not check1 and not check2:
         y = None
     elif not check1:
-        y = carbondf.columns[1:2]
-    elif not check2:
         y = carbondf.columns[0:1]
+    elif not check2:
+        y = carbondf.columns[1:2]
 
-    if y is not None:
-        fig = px.line(carbondf, x='Date/Time', y=y)
-        # labels = ['Outer Temprature', ]
-        fig.update_xaxes(
-            tickangle=45,
-            tickformat=format,
-            title = "Carbon Emisson with Time Monitor"
-            )
+    with placeholder.container():
+        if y is not None:
+            fig = px.line(carbondf, x='Date/Time', y=y)
+            # labels = ['Outer Temprature', ]
+            fig.update_xaxes(
+                tickangle=45,
+                tickformat=format,
+                title = "Carbon Emisson with Time Monitor"
+                )
 
-        st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, use_container_width=True)
 
-    y2 = gety2index(check1, check2, selectzone, zonedf)
-    if y2 is not None:
-        fig2 = px.line(zonedf, x='Date/Time', y=y2)
-        fig2.update_xaxes(
-            tickangle=45,
-            tickformat=format,
-            title = "West/East Zone Temperature (Action of HVAC) Monitor"
-            )
-        st.plotly_chart(fig2, use_container_width=True)
+        y2 = gety2index(check1, check2, selectzone, zonedf)
+        if y2 is not None:
+            fig2 = px.line(zonedf, x='Date/Time', y=y2)
+            fig2.update_xaxes(
+                tickangle=45,
+                tickformat=format,
+                title = "West/East Zone Temperature (Action of HVAC) Monitor"
+                )
+            st.plotly_chart(fig2, use_container_width=True)
         
 
     # st.caption("Date/Time vs Controled Air ")
@@ -177,7 +180,7 @@ def gety2index(check1, check2, selectzone, zonedf):
 
     if not check2:
         if west and east:
-            newdf = zonedf[["East Out Temperature (C) of Easy Agent","West Out Temperature (C) of Easy Agent"]]
+            newdf = zonedf[["East Out Temperature (C) of Baseline","West Out Temperature (C) of Baseline"]]
             return newdf.columns[0:2]
         elif west:
             return zonedf.columns[1:2]
@@ -201,8 +204,11 @@ def dynamicPlot(weeks):
     move_length = 160
     st.experimental_memo.clear()
     Parameters = ['West Temperature', 'East Temperature']
-    check1 = st.checkbox("Easy Agent")
+    check1 = st.checkbox("Baseline")
     check2 = st.checkbox("Our RL Agent")
+    eval = ['CO2']
+
+    selectzone = st.multiselect('Evaluation Parameters', eval, default=['CO2'])
     selectzone = st.multiselect('Select Temperature Parameters  ', Parameters, default=['West Temperature'])
     placeholder = st.empty()
     Timestep = len(df)
@@ -230,7 +236,7 @@ def dynamicPlot(weeks):
                 value = round(np.average(plotdf['Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our']),2)
             )
             kpi2.metric(
-                label = "Easy Agent CO2 Emisson Data Running Average (kg/h)",
+                label = "Baseline CO2 Emisson Data Running Average (kg/h)",
                 value = round(np.average(plotdf['Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy'
                 ]),2)
             )
@@ -248,11 +254,11 @@ def dynamicPlot(weeks):
                 "WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our":
                 "West Out Temperature (C) of Our",
                 "WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy":
-                "West Out Temperature (C) of Easy Agent",
+                "West Out Temperature (C) of Baseline",
                 "EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our":
                 "East Out Temperature (C) of Our",
                 "EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy":
-                "East Out Temperature (C) of Easy Agent"
+                "East Out Temperature (C) of Baseline"
             }, inplace=True)
 
             subdf = plotdf[['Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our',
@@ -261,7 +267,7 @@ def dynamicPlot(weeks):
             subdf.rename(columns={"Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our":
                     "CO2 Emission Mass (kg/h) of Our Method",
                     "Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy":
-                    "CO2 Emission Mass (kg/h) of Easy Agent"
+                    "CO2 Emission Mass (kg/h) of Baseline"
                     }, inplace = True)
 
 
