@@ -66,7 +66,6 @@ def staticPlot(weeks):
     st.markdown("""
         Use Checkbox and Select menu to select the data you want to display.
     """)
-    placeholder = st.empty()
     Parameters = ['West Temperature', 'East Temperature']
     eval = ['CO2', 'CO', 'SO2']
     check1 = st.checkbox("Baseline")
@@ -117,6 +116,8 @@ def staticPlot(weeks):
         y = carbondf.columns[0:1]
     elif not check2:
         y = carbondf.columns[1:2]
+    placeholder = st.empty()
+    
 
     with placeholder.container():
         if y is not None:
@@ -288,7 +289,7 @@ def dynamicPlot(weeks):
                             range=[0,move_length],
                             title = "Real-time CO2 Emission Equivalent Mass Monitor"
                             )
-            fig.update_yaxes(range=[0,30])
+            fig.update_yaxes(range=[0,32])
             # fig.addtrace(bbasedf, x = 'Date/Time', y=basedf.columms[5:6])
             st.plotly_chart(fig, use_container_width=True)
 
