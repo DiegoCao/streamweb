@@ -67,7 +67,7 @@ def getGas(gas, df):
         carbondf = df[["Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our",
         "Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy","Date/Time"]]
         carbondf.rename(columns={"Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our":
-                        "CO2 Emission Mass (kg/h) of Our Method",
+                        "CO2 Emission Mass (kg/h) of TRPO MPI",
                         "Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy":
                         "CO2 Emission Mass (kg/h) of Baseline"
                         }, inplace = True)
@@ -75,7 +75,7 @@ def getGas(gas, df):
         carbondf = df[["Site:Environmental Impact Electricity CO Emissions Mass [kg](Hourly)_our",
         "Site:Environmental Impact Electricity CO Emissions Mass [kg](Hourly)_easy","Date/Time"]]
         carbondf.rename(columns={"Site:Environmental Impact Electricity CO Emissions Mass [kg](Hourly)_our":
-                        "CO Emission Mass (kg/h) of Our Method",
+                        "CO Emission Mass (kg/h) of TRPO MPI",
                         "Site:Environmental Impact Electricity CO Emissions Mass [kg](Hourly)_easy":
                         "CO Emission Mass (kg/h) of Baseline"
                         }, inplace = True)
@@ -83,19 +83,19 @@ def getGas(gas, df):
         # col1 = str(gas) + ":Facility [kg](Hourly)_our"
         # col2 = str(gas) + ":Facility [kg](Hourly)_our"
         carbondf = df[['CH4:Facility [kg](Hourly)_our', 'CH4:Facility [kg](Hourly)_easy', 'Date/Time']]
-        carbondf.rename(columns = {"CH4:Facility [kg](Hourly)_our:col3":"CH4 Emission Mass (kg/h) of Our Method"
+        carbondf.rename(columns = {"CH4:Facility [kg](Hourly)_our:col3":"CH4 Emission Mass (kg/h) of TRPO MPI"
                     , "CH4:Facility [kg](Hourly)_easy":"CH4 Emission Mass (kg/h) of Baseline"}, inplace = True)
     elif gas == "PM2.5":
         carbondf = df[['PM2.5:Facility [kg](Hourly)_our', 'PM2.5:Facility [kg](Hourly)_easy', 'Date/Time']]
-        carbondf.rename(columns = {"PM2.5:Facility [kg](Hourly)_our:col3":"PM2.5 Emission Mass (kg/h) of Our Method"
+        carbondf.rename(columns = {"PM2.5:Facility [kg](Hourly)_our:col3":"PM2.5 Emission Mass (kg/h) of TRPO MPI"
                     , "PM2.5:Facility [kg](Hourly)_easy":"PM2.5 Emission Mass (kg/h) of Baseline"}, inplace = True)
     elif gas == "SO2":
         carbondf = df[['SO2:Facility [kg](Hourly)_our', 'SO2:Facility [kg](Hourly)_easy', 'Date/Time']]
-        carbondf.rename(columns = {"SO2:Facility [kg](Hourly)_our:col3":"SO2 Emission Mass (kg/h) of Our Method"
+        carbondf.rename(columns = {"SO2:Facility [kg](Hourly)_our:col3":"SO2 Emission Mass (kg/h) of TRPO MPI"
                     , "SO2:Facility [kg](Hourly)_easy":"SO2 Emission Mass (kg/h) of Baseline"}, inplace = True)
     elif gas == "NOx":
         carbondf = df[['NOx:Facility [kg](Hourly)_our', 'NOx:Facility [kg](Hourly)_easy', 'Date/Time']]
-        carbondf.rename(columns = {"NOx:Facility [kg](Hourly)_our:col3":"NOx Emission Mass (kg/h) of Our Method"
+        carbondf.rename(columns = {"NOx:Facility [kg](Hourly)_our:col3":"NOx Emission Mass (kg/h) of TRPO MPI"
                     , "NOx:Facility [kg](Hourly)_easy":"NOx Emission Mass (kg/h) of Baseline"}, inplace = True)
     return carbondf
 
@@ -108,7 +108,7 @@ def staticPlot(weeks):
     Fanmeters = ['West Zone Supply Fan Rate', 'East Zone Supply Fan Rate']
     Outmeters = ['West Temperature', 'East Temperature']
     check1 = st.checkbox("Baseline")
-    check2 = st.checkbox("Our RL Agent")
+    check2 = st.checkbox("TRPO MPI")
 
     # selectzone = st.multiselect('Evaluation Parameters', eval, default=['CO2'])
     gas = st.selectbox('Evaluation Gas', ('CO2', 'CO', 'CH4', 'PM2.5', 'SO2', 'NOx'))
@@ -136,11 +136,11 @@ def staticPlot(weeks):
             ]]
     zonedf.rename(columns={
         "WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our":
-        "West Out Temperature (C) of Our",
+        "West Out Temperature (C) of TRPO MPI",
         "WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy":
         "West Out Temperature (C) of Baseline",
         "EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our":
-        "East Out Temperature (C) of Our",
+        "East Out Temperature (C) of TRPO MPI",
         "EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy":
         "East Out Temperature (C) of Baseline"
     }, inplace=True)
@@ -153,11 +153,11 @@ def staticPlot(weeks):
             ]]
     outdf.rename(columns={
                 "WEST ZONE:Zone Air Temperature [C](TimeStep)_our":
-                "West Zone real temperature of Our",
+                "West Zone real temperature of TRPO MPI",
                 "WEST ZONE:Zone Air Temperature [C](TimeStep)_easy":
                 "West Zone real temperature of Baseline",
                 "EAST ZONE:Zone Air Temperature [C](TimeStep)_our":
-                "East Zone real temperature of Our",
+                "East Zone real temperature of TRPO MPI",
                 "EAST ZONE:Zone Air Temperature [C](TimeStep)_easy":
                 "East Zone real temperature of Baseline"
             }, inplace=True)
@@ -170,11 +170,11 @@ def staticPlot(weeks):
     ]]
     fandf.rename(columns={
         "WEST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_our":
-        "West Zone Supply Fan Rate of Our",
+        "West Zone Supply Fan Rate of TRPO MPI",
         "WEST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_easy":
         "West Zone Supply Fan Rate of Baseline",
         "EAST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_our":
-        "East Zone Supply Fan Rate of Our",
+        "East Zone Supply Fan Rate of TRPO MPI",
         "EAST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_easy":
         "East Zone Supply Fan Rate of Easy Baseline",
     }, inplace=True)
@@ -391,7 +391,7 @@ def dynamicPlot(weeks):
 
     Outmeters = ['West Temperature', 'East Temperature']
     check1 = st.checkbox("Baseline")
-    check2 = st.checkbox("Our RL Agent")
+    check2 = st.checkbox("TRPO MPI")
 
     gas = st.selectbox('Evaluation Gas', ('CO2', 'CO', 'CH4', 'PM2.5', 'SO2', 'NOx'))   
     selectzone = st.multiselect('Select HVAC Temperature Parameters ', Parameters, default=['HVAC West Temperature'])
@@ -441,11 +441,11 @@ def dynamicPlot(weeks):
 
             zonedf.rename(columns={
                 "WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our":
-                "West HVAC Temperature (C) of Our",
+                "West HVAC Temperature (C) of TRPO MPI",
                 "WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy":
                 "West HVAC Temperature (C) of Baseline",
                 "EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our":
-                "East HVAC Temperature (C) of Our",
+                "East HVAC Temperature (C) of TRPO MPI",
                 "EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy":
                 "East HVAC Temperature (C) of Baseline"
             }, inplace=True)
@@ -459,11 +459,11 @@ def dynamicPlot(weeks):
             ]]
             outdf.rename(columns={
                 "WEST ZONE:Zone Air Temperature [C](TimeStep)_our":
-                "West Zone Real Temperature(C) of Our",
+                "West Zone Real Temperature(C) of TRPO MPI",
                 "WEST ZONE:Zone Air Temperature [C](TimeStep)_easy":
                 "West Zone Real Temperature(C)  of Baseline",
                 "EAST ZONE:Zone Air Temperature [C](TimeStep)_our":
-                "East Zone Real Temperature(C) of Our",
+                "East Zone Real Temperature(C) of TRPO MPI",
                 "EAST ZONE:Zone Air Temperature [C](TimeStep)_easy":
                 "East Zone Real Temperature(C) of Baseline"
             }, inplace=True)
@@ -478,11 +478,11 @@ def dynamicPlot(weeks):
             ]]
             fandf.rename(columns={
                 "WEST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_our":
-                "West Zone Supply Fan Rate of Our",
+                "West Zone Supply Fan Rate of TRPO MPI",
                 "WEST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_easy":
                 "West Zone Supply Fan Rate of Baseline",
                 "EAST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_our":
-                "East Zone Supply Fan Rate of Our",
+                "East Zone Supply Fan Rate of TRPO MPI",
                 "EAST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_easy":
                 "East Zone Supply Fan Rate of Easy Baseline",
             }, inplace=True)
