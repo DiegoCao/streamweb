@@ -1,4 +1,6 @@
+from cgitb import reset
 import os
+from tkinter.tix import Tree
 import requests
 import plotly.figure_factory as ff
 import plotly.graph_objs as go
@@ -54,39 +56,76 @@ format = "%m-%d %H:%M:%S"
 
 # df = pd.read_csv("util/pages/RL_new.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
 # easydf = pd.read_csv("util/pages/easy_agent_data.csv", parse_dates=['Date/Time'], infer_datetime_format=format)
-df = pd.read_csv("util/pages/RL_final.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
+df = pd.read_csv("RL_final_v2.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
 cur_var = 1
 
 if 'cur' not in st.session_state:
     st.session_state['cur'] = 1
 
+def getGas(gas, df):
+    if gas == "CO2":
+        carbondf = df[["Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our",
+        "Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy","Date/Time"]]
+        carbondf.rename(columns={"Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our":
+                        "CO2 Emission Mass (kg/h) of Our Method",
+                        "Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy":
+                        "CO2 Emission Mass (kg/h) of Baseline"
+                        }, inplace = True)
+    elif gas == "CO":
+        carbondf = df[["Site:Environmental Impact Electricity CO Emissions Mass [kg](Hourly)_our",
+        "Site:Environmental Impact Electricity CO Emissions Mass [kg](Hourly)_easy","Date/Time"]]
+        carbondf.rename(columns={"Site:Environmental Impact Electricity CO Emissions Mass [kg](Hourly)_our":
+                        "CO Emission Mass (kg/h) of Our Method",
+                        "Site:Environmental Impact Electricity CO Emissions Mass [kg](Hourly)_easy":
+                        "CO Emission Mass (kg/h) of Baseline"
+                        }, inplace = True)
+    elif gas == "CH4":
+        # col1 = str(gas) + ":Facility [kg](Hourly)_our"
+        # col2 = str(gas) + ":Facility [kg](Hourly)_our"
+        carbondf = df[['CH4:Facility [kg](Hourly)_our', 'CH4:Facility [kg](Hourly)_easy', 'Date/Time']]
+        carbondf.rename(columns = {"CH4:Facility [kg](Hourly)_our:col3":"CH4 Emission Mass (kg/h) of Our Method"
+                    , "CH4:Facility [kg](Hourly)_easy":"CH4 Emission Mass (kg/h) of Baseline"}, inplace = True)
+    elif gas == "PM2.5":
+        carbondf = df[['PM2.5:Facility [kg](Hourly)_our', 'PM2.5:Facility [kg](Hourly)_easy', 'Date/Time']]
+        carbondf.rename(columns = {"PM2.5:Facility [kg](Hourly)_our:col3":"PM2.5 Emission Mass (kg/h) of Our Method"
+                    , "PM2.5:Facility [kg](Hourly)_easy":"PM2.5 Emission Mass (kg/h) of Baseline"}, inplace = True)
+    elif gas == "SO2":
+        carbondf = df[['SO2:Facility [kg](Hourly)_our', 'SO2:Facility [kg](Hourly)_easy', 'Date/Time']]
+        carbondf.rename(columns = {"SO2:Facility [kg](Hourly)_our:col3":"SO2 Emission Mass (kg/h) of Our Method"
+                    , "SO2:Facility [kg](Hourly)_easy":"SO2 Emission Mass (kg/h) of Baseline"}, inplace = True)
+    elif gas == "NOx":
+        carbondf = df[['NOx:Facility [kg](Hourly)_our', 'NOx:Facility [kg](Hourly)_easy', 'Date/Time']]
+        carbondf.rename(columns = {"NOx:Facility [kg](Hourly)_our:col3":"NOx Emission Mass (kg/h) of Our Method"
+                    , "NOx:Facility [kg](Hourly)_easy":"NOx Emission Mass (kg/h) of Baseline"}, inplace = True)
+    return carbondf
 
 def staticPlot(weeks):
     st.title("Static HVAC Dashboard")
     st.markdown("""
         Use Checkbox and Select menu to select the data you want to display.
     """)
-    Parameters = ['West Temperature', 'East Temperature']
-    eval = ['CO2', 'CO', 'SO2']
+    Parameters = ['HVAC West Temperature', 'HVAC East Temperature']
+    Fanmeters = ['West Zone Supply Fan Rate', 'East Zone Supply Fan Rate']
+    Outmeters = ['West Temperature', 'East Temperature']
     check1 = st.checkbox("Baseline")
     check2 = st.checkbox("Our RL Agent")
-    selectzone = st.multiselect('Evaluation Parameters', eval, default=['CO2'])
-    selectzone = st.multiselect('Action Temperature Parameters  ', Parameters, default=['West Temperature'])
+
+    # selectzone = st.multiselect('Evaluation Parameters', eval, default=['CO2'])
+    gas = st.selectbox('Evaluation Gas', ('CO2', 'CO', 'CH4', 'PM2.5', 'SO2', 'NOx'))
+    selectzone = st.multiselect('Action Temperature Parameters  ', Parameters, default=['HVAC West Temperature'])
+    fanmass = st.multiselect('HVAC Supply Fan Rate', Fanmeters, default = ['West Zone Supply Fan Rate'])
+
+
+    outtemperatre = st.multiselect('Select Output Temperatures ', Outmeters, default=['West Temperature'])
+
     length = len(df)
     X = np.linspace(0, 1, len(df))
     start = weeks[0]
     end = weeks[1]
-    # X = X[int(start*length/T):int(end*length/T)]
-    # y = pd.melt(df, id_vars=['Date/Time'], value_vars=['outer_T', 'left_T'])
-    carbondf = df[["Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our",
-        "Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy","Date/Time"]]
 
+
+    carbondf = getGas(gas, df)
     carbondf = carbondf[int(start*length/T):int(end*length/T)]
-    carbondf.rename(columns={"Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our":
-                    "CO2 Emission Mass (kg/h) of Our Method",
-                    "Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy":
-                    "CO2 Emission Mass (kg/h) of Baseline"
-                    }, inplace = True)
 
     zonedf= df[[
                 'WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our',
@@ -105,7 +144,44 @@ def staticPlot(weeks):
         "EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy":
         "East Out Temperature (C) of Baseline"
     }, inplace=True)
+    outdf = df[[
+                "WEST ZONE:Zone Air Temperature [C](TimeStep)_our",
+                "WEST ZONE:Zone Air Temperature [C](TimeStep)_easy",
+                "EAST ZONE:Zone Air Temperature [C](TimeStep)_our",
+                "EAST ZONE:Zone Air Temperature [C](TimeStep)_easy",
+                "Date/Time"
+            ]]
+    outdf.rename(columns={
+                "WEST ZONE:Zone Air Temperature [C](TimeStep)_our":
+                "West Zone real temperature of Our",
+                "WEST ZONE:Zone Air Temperature [C](TimeStep)_easy":
+                "West Zone real temperature of Baseline",
+                "EAST ZONE:Zone Air Temperature [C](TimeStep)_our":
+                "East Zone real temperature of Our",
+                "EAST ZONE:Zone Air Temperature [C](TimeStep)_easy":
+                "East Zone real temperature of Baseline"
+            }, inplace=True)
+    fandf = df[[
+        "WEST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_our",
+        "WEST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_easy",
+        "EAST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_our",
+        "EAST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_easy",
+        "Date/Time"
+    ]]
+    fandf.rename(columns={
+        "WEST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_our":
+        "West Zone Supply Fan Rate of Our",
+        "WEST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_easy":
+        "West Zone Supply Fan Rate of Baseline",
+        "EAST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_our":
+        "East Zone Supply Fan Rate of Our",
+        "EAST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_easy":
+        "East Zone Supply Fan Rate of Easy Baseline",
+    }, inplace=True)
+
     zonedf = zonedf[int(start*length/T):int(end*length/T)]
+    outdf = outdf[int(start*length/T):int(end*length/T)]
+    fandf = fandf[int(start*length/T):int(end*length/T)]
 
     # print(plotdf.columns[3:5])
     if check1 and check2:
@@ -140,8 +216,42 @@ def staticPlot(weeks):
                 title = "West/East Zone Temperature (Action of HVAC) Monitor"
                 )
             st.plotly_chart(fig2, use_container_width=True)
+        y4 = gety4index(check1, check2,fanmass , fandf)
+        if y4 is not None:
+            fig4 = px.line(fandf, x='Date/Time', y=y4)
+            fig4.update_xaxes(
+                tickangle=45,
+                tickformat=format,
+                title = "Real-time West/East Supply Fan Air Mass Flow Rate[kg/s] Hourly"
+                )
+
+            fig4.update_xaxes(
+                range=[0,8]
+            )
+            st.plotly_chart(fig4, use_container_width=True)
+            
+
+        y3 = gety3index(check1, check2, outtemperatre, outdf)
+        if y3 is not None:
+            fig3 = px.line(outdf, x='Date/Time', y=y3)
+            fig3.update_xaxes(
+                tickangle=45,
+                tickformat=format,
+                title = "Real-time West/East Zone Real Temperature Monitor"
+                )
+
+            st.plotly_chart(fig3, use_container_width=True)
         
 
+            
+            
+        
+    if 'cur' not in st.session_state:
+        st.session_state['cur'] = 1
+    st.session_state['cur'] = 1
+    
+
+    
     # st.caption("Date/Time vs Controled Air ")
     # fig2 = px.line(plotdf, x='Date/Time', y=plotdf.columns[4:6])
     # st.plotly_chart(fig2, use_container_width=True)
@@ -163,9 +273,9 @@ Medudict = {'West': ['WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature
 def gety2index(check1, check2, selectzone, zonedf):
     west = False
     east = False
-    if "West Temperature" in selectzone:
+    if "HVAC West Temperature" in selectzone:
         west = True
-    if "East Temperature" in selectzone:
+    if "HVAC East Temperature" in selectzone:
         east = True
     if not check1 and not check2:
         return None
@@ -197,6 +307,78 @@ def gety2index(check1, check2, selectzone, zonedf):
             return zonedf.columns[2:3]
 
 
+def gety3index(check1, check2, selectzone, zonedf):
+    west = False
+    east = False
+    if "West Temperature" in selectzone:
+        west = True
+    if "East Temperature" in selectzone:
+        east = True
+    if not check1 and not check2:
+        return None
+    if check1 and check2:
+        if west and east:
+            return zonedf.columns[0:4]
+        elif west and not east:
+            return zonedf.columns[0:2]
+        elif east and not west:
+            return zonedf.columns[2:4]
+        else:
+            return None
+    if not check2:
+        if west and east:
+            newdf = zonedf[["East Zone Real Temperature(C) of Baseline","West Zone Real Temperature(C) of Baseline"]]
+            return newdf.columns[0:2]
+        elif west:
+            return zonedf.columns[1:2]
+        elif east:
+            return zonedf.columns[3:4]
+    if not check1:
+        if west and east:
+            newdf = zonedf[["East Zone Real Temperature(C) of Our","West Zone Real Temperature(C) of Our"]]
+            return newdf.columns[0:2]
+        elif west:
+            return zonedf.columns[0:1]
+        elif east:
+            return zonedf.columns[2:3]
+
+def gety4index(check1, check2, selectzone, zonedf):
+    west = False
+    east = False
+    if "West Zone Supply Fan Rate" in selectzone:
+        west = True
+    if "East Zone Supply Fan Rate" in selectzone:
+        east = True
+    if not check1 and not check2:
+        return None
+    if check1 and check2:
+        if west and east:
+            return zonedf.columns[0:4]
+        elif west and not east:
+            return zonedf.columns[0:2]
+        elif east and not west:
+            return zonedf.columns[2:4]
+        else:
+            return None
+    if not check2:
+        if west and east:
+            newdf = zonedf[["East Zone Supply Fan Rate of Baseline","West Zone Supply Fan Rate of Baseline"]]
+            return newdf.columns[0:2]
+        elif west:
+            return zonedf.columns[1:2]
+        elif east:
+            return zonedf.columns[3:4]
+    if not check1:
+        if west and east:
+            newdf = zonedf[["East Zone Supply Fan Rate of Our","West Zone Supply Fan Rate of Our"]]
+            return newdf.columns[0:2]
+        elif west:
+            return zonedf.columns[0:1]
+        elif east:
+            return zonedf.columns[2:3]
+
+
+
 def dynamicPlot(weeks):
     st.title("Real-Time HVAC Dashboard")
     st.markdown("""
@@ -204,13 +386,19 @@ def dynamicPlot(weeks):
     """)
     move_length = 160
     st.experimental_memo.clear()
-    Parameters = ['West Temperature', 'East Temperature']
+    Parameters = ['HVAC West Temperature', 'HVAC East Temperature']
+    Fanmeters = ['West Zone Supply Fan Rate', 'East Zone Supply Fan Rate']
+
+    Outmeters = ['West Temperature', 'East Temperature']
     check1 = st.checkbox("Baseline")
     check2 = st.checkbox("Our RL Agent")
-    eval = ['CO2']
 
-    selectzone = st.multiselect('Evaluation Parameters', eval, default=['CO2'])
-    selectzone = st.multiselect('Select Temperature Parameters  ', Parameters, default=['West Temperature'])
+    gas = st.selectbox('Evaluation Gas', ('CO2', 'CO', 'CH4', 'PM2.5', 'SO2', 'NOx'))   
+    selectzone = st.multiselect('Select HVAC Temperature Parameters ', Parameters, default=['HVAC West Temperature'])
+    fanmass = st.multiselect('Select Zone Fan Parameters',Fanmeters, default=['West Zone Supply Fan Rate'])
+
+    outtemperatre = st.multiselect('Select Output Temperatures ', Outmeters, default=['West Temperature'])
+
     placeholder = st.empty()
     Timestep = len(df)
     # start = cur_var
@@ -222,7 +410,7 @@ def dynamicPlot(weeks):
 
     for i in range(start, Timestep):
         with placeholder.container():
-            
+
             length = len(df)
             kpi1, kpi2 = st.columns(2)
 
@@ -242,7 +430,6 @@ def dynamicPlot(weeks):
                 ]),2)
             )
 
-
                 # basedf = easydf[int((i-5)*length/Timestep):int(i*length/Timestep)]
             zonedf = plotdf[[
                 'WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our',
@@ -251,35 +438,62 @@ def dynamicPlot(weeks):
                 'EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy',
                 'Date/Time'
             ]]
+
             zonedf.rename(columns={
                 "WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our":
-                "West Out Temperature (C) of Our",
+                "West HVAC Temperature (C) of Our",
                 "WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy":
-                "West Out Temperature (C) of Baseline",
+                "West HVAC Temperature (C) of Baseline",
                 "EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our":
-                "East Out Temperature (C) of Our",
+                "East HVAC Temperature (C) of Our",
                 "EAST AIR LOOP OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy":
-                "East Out Temperature (C) of Baseline"
+                "East HVAC Temperature (C) of Baseline"
             }, inplace=True)
 
-            subdf = plotdf[['Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our',
-                    'Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy',
-                    'Date/Time']]
-            subdf.rename(columns={"Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our":
-                    "CO2 Emission Mass (kg/h) of Our Method",
-                    "Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy":
-                    "CO2 Emission Mass (kg/h) of Baseline"
-                    }, inplace = True)
+            outdf = plotdf[[
+                "WEST ZONE:Zone Air Temperature [C](TimeStep)_our",
+                "WEST ZONE:Zone Air Temperature [C](TimeStep)_easy",
+                "EAST ZONE:Zone Air Temperature [C](TimeStep)_our",
+                "EAST ZONE:Zone Air Temperature [C](TimeStep)_easy",
+                'Date/Time'
+            ]]
+            outdf.rename(columns={
+                "WEST ZONE:Zone Air Temperature [C](TimeStep)_our":
+                "West Zone Real Temperature(C) of Our",
+                "WEST ZONE:Zone Air Temperature [C](TimeStep)_easy":
+                "West Zone Real Temperature(C)  of Baseline",
+                "EAST ZONE:Zone Air Temperature [C](TimeStep)_our":
+                "East Zone Real Temperature(C) of Our",
+                "EAST ZONE:Zone Air Temperature [C](TimeStep)_easy":
+                "East Zone Real Temperature(C) of Baseline"
+            }, inplace=True)
 
 
+            fandf = plotdf[[
+                "WEST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_our",
+                "WEST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_easy",
+                "EAST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_our",
+                "EAST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_easy",
+                "Date/Time"
+            ]]
+            fandf.rename(columns={
+                "WEST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_our":
+                "West Zone Supply Fan Rate of Our",
+                "WEST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_easy":
+                "West Zone Supply Fan Rate of Baseline",
+                "EAST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_our":
+                "East Zone Supply Fan Rate of Our",
+                "EAST ZONE SUPPLY FAN:Fan Air Mass Flow Rate [kg/s](Hourly)_easy":
+                "East Zone Supply Fan Rate of Easy Baseline",
+            }, inplace=True)
+
+            subdf = getGas(gas, plotdf)
 
             y_ = subdf.columns[0:2]
             if check1 and not check2:
                 y_ = subdf.columns[1:2]
             if check2 and not check1:
                 y_ = subdf.columns[0:1]
-            
-  
             
             fig = px.line(subdf, x='Date/Time', y=y_)
             fig.update_xaxes(
@@ -303,7 +517,40 @@ def dynamicPlot(weeks):
                 range=[0,move_length],
                 title = "Real-time West/East Zone Temperature (Action of HVAC) Monitor"
                 )
+
+
             st.plotly_chart(fig2, use_container_width=True)
+
+            y4 = gety4index(check1, check2,fanmass , fandf)
+            fig4 = px.line(fandf, x='Date/Time', y=y4)
+            fig4.update_xaxes(
+                tickangle=45,
+                dtick=12,
+                tickformat=format,
+                range=[0,move_length],
+                title = "Real-time West/East Zone Real Temperature Monitor"
+                )
+            fig4.update_yaxes(
+                range=[0,8]
+            )
+            st.plotly_chart(fig4, use_container_width=True)
+            
+            y3 = gety3index(check1, check2,outtemperatre, outdf)
+            fig3 = px.line(outdf, x='Date/Time', y=y3)
+            fig3.update_xaxes(
+                tickangle=45,
+                dtick=12,
+                tickformat=format,
+                range=[0,move_length],
+                title = "Real-time West/East Zone Real Temperature Monitor"
+                )
+            st.plotly_chart(fig3, use_container_width=True)
+            
+
+
+            
+            
+
             time.sleep(0.1)
             st.session_state['cur'] += 1
 
@@ -371,159 +618,4 @@ def data_page():
         pass
 
 
-    # if mode == 'Static':
-
-    # # -- Get list of events
-    # # eventlist = get_eventlist()
-    # event_list = ['adsf', 'adf']
-    # #-- Set time by GPS or event
-    # select_event = st.sidebar.selectbox('How do you want to find data?',
-    #                                     ['By event name', 'By GPS'])
-
-    # if select_event == 'By GPS':
-    #     # -- Set a GPS time:
-    #     str_t0 = st.sidebar.text_input('GPS Time', '1126259462.4')    # -- GW150914
-    #     t0 = float(str_t0)
-
-    #     st.sidebar.markdown("""
-    #     Example times in the H1 detector:
-    #     * 1126259462.4    (GW150914)
-    #     * 1187008882.4    (GW170817)
-    #     * 1128667463.0    (hardware injection)
-    #     * 1132401286.33   (Koi Fish Glitch)
-    #     """)
-    # else:
-    #     chosen_event = st.sidebar.selectbox('Select Event', event_list)
-    #     # t0 = datasets.event_gps(chosen_event)
-    #     detectorlist = list(datasets.event_detectors(chosen_event))
-    #     detectorlist.sort()
-    #     st.subheader(chosen_event)
-    #     # st.write('GPS:', t0)
-
-    #     # -- Experiment to display masses
-
-    # #-- Choose detector as H1, L1, or V1
-    # detector = st.sidebar.selectbox('Detector', detectorlist)
-
-    # # -- Select for high sample rate data
-    # fs = 4096
-    # maxband = 2000
-    # high_fs = st.sidebar.checkbox('Full sample rate data')
-    # if high_fs:
-    #     fs = 16384
-    #     maxband = 8000
-
-    # # -- Create sidebar for plot controls
-    # st.sidebar.markdown('## Set Plot Parameters')
-    # dtboth = st.sidebar.slider('Time Range (seconds)', 0.1, 8.0, 1.0)  # min, max, default
-    # dt = dtboth / 2.0
-
-    # st.sidebar.markdown('#### Whitened and band-passed data')
-    # whiten = st.sidebar.checkbox('Whiten?', value=True)
-    # freqrange = st.sidebar.slider('Band-pass frequency range (Hz)', min_value=10, max_value=maxband, value=(30,400))
-
-    # # -- Create sidebar for Q-transform controls
-    # st.sidebar.markdown('#### Q-tranform plot')
-    # vmax = st.sidebar.slider('Colorbar Max Energy', 10, 500, 25)  # min, max, default
-    # qcenter = st.sidebar.slider('Q-value', 5, 120, 5)  # min, max, default
-    # qrange = (int(qcenter*0.8), int(qcenter*1.2))
-
-    # #-- Create a text element and let the reader know the data is loading.
-    # strain_load_state = st.text('Loading data...this may take a minute')
-    # try:
-    #     strain_data = load_gw(t0, detector, fs)
-    # except:
-    #     st.warning('{0} data are not available for time {1}.  Please try a different time and detector pair.'.format(detector, t0))
-    #     st.stop()
-
-    # strain_load_state.text('Loading data...done!')
-
-    # #-- Make a time series plot
-
-    # cropstart = t0-0.2
-    # cropend   = t0+0.1
-
-    # cropstart = t0 - dt
-    # cropend   = t0 + dt
-
-    # st.subheader('Raw data')
-    # center = int(t0)
-    # strain = deepcopy(strain_data)
-
-    # with _lock:
-    #     fig1 = strain.crop(cropstart, cropend).plot()
-    #     #fig1 = cropped.plot()
-    #     st.pyplot(fig1, clear_figure=True)
-
-    # # -- Try whitened and band-passed plot
-    # # -- Whiten and bandpass data
-    # st.subheader('Whitened and Band-passed Data')
-
-    # if whiten:
-    #     white_data = strain.whiten()
-    #     bp_data = white_data.bandpass(freqrange[0], freqrange[1])
-    # else:
-    #     bp_data = strain.bandpass(freqrange[0], freqrange[1])
-
-    # bp_cropped = bp_data.crop(cropstart, cropend)
-
-    # with _lock:
-    #     fig3 = bp_cropped.plot()
-    #     st.pyplot(fig3, clear_figure=True)
-
-    # # # -- Allow data download
-    # # download = {'Time':bp_cropped.times, 'Strain':bp_cropped.value}
-    # # df = pd.DataFrame(download)
-    # # csv = df.to_csv(index=False)
-    # # b64 = base64.b64encode(csv.encode()).decode()  # some strings <-> bytes conversions necessary here
-    # # fn =  detector + '-STRAIN' + '-' + str(int(cropstart)) + '-' + str(int(cropend-cropstart)) + '.csv'
-    # # href = f'<a href="data:file/csv;base64,{b64}" download="{fn}">Download Data as CSV File</a>'
-    # # st.markdown(href, unsafe_allow_html=True)
-
-    # # # -- Make audio file
-    # # st.audio(make_audio_file(bp_cropped), format='audio/wav')
-
-    # # -- Notes on whitening
-    # with st.expander("See notes"):
-    #     st.markdown("""
-    # * Whitening is a process that re-weights a signal, so that all frequency bins have a nearly equal amount of noise.
-    # * A band-pass filter uses both a low frequency cutoff and a high frequency cutoff, and only passes signals in the frequency band between these values.
-    # See also:
-    # * [Signal Processing Tutorial](https://share.streamlit.io/jkanner/streamlit-audio/main/app.py)
-    # """)
-
-    # st.subheader('Q-transform')
-
-    # hq = strain.q_transform(outseg=(t0-dt, t0+dt), qrange=qrange)
-
-    # with _lock:
-    #     fig4 = hq.plot()
-    #     ax = fig4.gca()
-    #     fig4.colorbar(label="Normalised energy", vmax=vmax, vmin=0)
-    #     ax.grid(False)
-    #     ax.set_yscale('log')
-    #     ax.set_ylim(bottom=15)
-    #     st.pyplot(fig4, clear_figure=True)
-
-    # with st.expander("See notes"):
-
-    #     st.markdown("""
-    # A Q-transform plot shows how a signal’s frequency changes with time.
-    # * The x-axis shows time
-    # * The y-axis shows frequency
-    # The color scale shows the amount of “energy” or “signal power” in each time-frequency pixel.
-    # A parameter called “Q” refers to the quality factor.  A higher quality factor corresponds to a larger number of cycles in each time-frequency pixel.
-    # For gravitational-wave signals, binary black holes are most clear with lower Q values (Q = 5-20), where binary neutron star mergers work better with higher Q values (Q = 80 - 120).
-    # See also:
-    # * [GWpy q-transform](https://gwpy.github.io/docs/stable/examples/timeseries/qscan.html)
-    # * [Reading Time-frequency plots](https://labcit.ligo.caltech.edu/~jkanner/aapt/web/math.html#tfplot)
-    # * [Shourov Chatterji PhD Thesis](https://dspace.mit.edu/handle/1721.1/34388)
-    # """)
-
-    # st.subheader("About this app")
-    # st.markdown("""
-    # This app displays data from LIGO, Virgo, and GEO downloaded from
-    # the Gravitational Wave Open Science Center at https://gw-openscience.org .
-    # You can see how this works in the [Quickview Jupyter Notebook](https://github.com/losc-tutorial/quickview) or
-    # [see the code](https://github.com/jkanner/streamlit-dataview).
-    # """)
+ 

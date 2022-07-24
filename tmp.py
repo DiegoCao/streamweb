@@ -17,9 +17,9 @@ df = pd.read_csv("util/pages/RL_agent_data.csv", parse_dates=['Date/Time'],infer
 easydf = pd.read_csv("util/pages/easy_agent_data.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
 
 finaldf = pd.merge(df, easydf, left_on="Date/Time", right_on = "Date/Time",suffixes=['_our', '_easy'])
-print(finaldf.columns[5:8])
+# print(finaldf.columns[5:8])
 
-# finaldf.to_csv("RL_final.csv")
+finaldf.to_csv("RL_final_v2.csv")
 # df = pd.read_csv("util/pages/RL_agent_data.csv")
 # df['Date/Time'] = df['Date/Time'].apply(my_to_datetime)
 # df.to_csv("util/pages/RL_new.csv")
