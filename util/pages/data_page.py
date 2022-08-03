@@ -56,7 +56,7 @@ format = "%m-%d %H:%M:%S"
 
 # df = pd.read_csv("util/pages/RL_new.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
 # easydf = pd.read_csv("util/pages/easy_agent_data.csv", parse_dates=['Date/Time'], infer_datetime_format=format)
-df = pd.read_csv("RL_final_v5.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
+df = pd.read_csv("RL_final_v6.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
 cur_var = 1
 
 if 'cur' not in st.session_state:
@@ -186,7 +186,6 @@ def staticPlot(weeks):
     zonedf = zonedf[int(start*length/T):int(end*length/T)]
     outdf = outdf[int(start*length/T):int(end*length/T)]
     fandf = fandf[int(start*length/T):int(end*length/T)]
-
     # print(plotdf.columns[3:5])
     if check1 and check2:
         y = carbondf.columns[0:2]
@@ -198,7 +197,6 @@ def staticPlot(weeks):
         y = carbondf.columns[1:2]
     placeholder = st.empty()
     
-
     with placeholder.container():
         if y is not None:
             fig = px.line(carbondf, x='Date/Time', y=y)
@@ -247,9 +245,6 @@ def staticPlot(weeks):
     if 'cur' not in st.session_state:
         st.session_state['cur'] = 1
     st.session_state['cur'] = 1
-    
-
-    
     # st.caption("Date/Time vs Controled Air ")
     # fig2 = px.line(plotdf, x='Date/Time', y=plotdf.columns[4:6])
     # st.plotly_chart(fig2, use_container_width=True)
@@ -257,7 +252,6 @@ def staticPlot(weeks):
     # # st.caption("Date/Time vs Evaluation Data")
     # fig3 = px.line(plotdf, x='Date/Time', y=plotdf.columns[7:10])
     # st.plotly_chart(fig3, use_container_width=True)
-
 
 Medudict = {'West': ['WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_easy.',
                     'WEST ZONE DEC OUTLET NODE:System Node Setpoint Temperature [C](TimeStep)_our'
