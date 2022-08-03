@@ -1,0 +1,5 @@
+Building Type,Data Center,#Stories,1
+Location,Chicago,West Zone Area,232.26 square meters
+Area,491.34 square meters,East Zone Area,259.08 square meters
+#Zones,2,Setpoint (Target) Temperature,-20 ~ 50 °C
+#HVAC Systems,2,Supply Fan Air Mass Flow Rate,1.75 ~ 7.0 kg/s
