@@ -11,11 +11,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 """
-from streamlit_autorefresh import st_autorefresh
+from util.pages.building_page import building_page
 from util.pages.member_page import member_page
 from util.pages.data_page import data_page
 from util.pages.overview_page import overview_page
 from util.pages.home_page import home_page
+from util.pages.method_page import method_page
 from util.functions.path import get_file_path, get_dir_name, util_str, data_str
 from PIL import Image
 import streamlit as st
@@ -48,7 +49,7 @@ class MultiApp:
             ),
         )
 
-        st.set_page_config(page_title="Energy Plus Demo",
+        st.set_page_config(page_title="Building Carbon Optimization Demo",
                            page_icon=img, layout="wide")
 
         st.sidebar.markdown("## Main Menu")
@@ -64,6 +65,7 @@ app = MultiApp()
 app.add_app("Home Page", home_page)
 app.add_app("Group members", member_page)
 # app.add_app("System Overview", overview_page)
+app.add_app("Building Information", building_page)
 app.add_app("Result Visualization", data_page)
 # app.add_app("Search PDB", pdb_page)
 # app.add_app("Explore Conformations", conformation_page)
