@@ -56,7 +56,7 @@ format = "%m-%d %H:%M:%S"
 
 # df = pd.read_csv("util/pages/RL_new.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
 # easydf = pd.read_csv("util/pages/easy_agent_data.csv", parse_dates=['Date/Time'], infer_datetime_format=format)
-df = pd.read_csv("RL_final_v2.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
+df = pd.read_csv("RL_final_v3.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
 cur_var = 1
 
 if 'cur' not in st.session_state:
@@ -109,6 +109,10 @@ def staticPlot(weeks):
     Outmeters = ['West Temperature', 'East Temperature']
     check1 = st.checkbox("Baseline")
     check2 = st.checkbox("TRPO MPI")
+    st.markdown("""
+        - Baseline is a linear non-trivial control algorithm which surpassed dummy agent performance. 
+        - TRPO MPI is our Reinforcement Learning based control algorithm.
+    """)
 
     # selectzone = st.multiselect('Evaluation Parameters', eval, default=['CO2'])
     gas = st.selectbox('Evaluation Gas', ('CO2', 'CO', 'CH4', 'PM2.5', 'SO2', 'NOx'))
@@ -225,11 +229,10 @@ def staticPlot(weeks):
                 title = "Real-time West/East Supply Fan Air Mass Flow Rate[kg/s] Hourly"
                 )
 
-            fig4.update_xaxes(
+            fig4.update_yaxes(
                 range=[0,8]
             )
             st.plotly_chart(fig4, use_container_width=True)
-            
 
         y3 = gety3index(check1, check2, outtemperatre, outdf)
         if y3 is not None:
@@ -299,7 +302,7 @@ def gety2index(check1, check2, selectzone, zonedf):
             return zonedf.columns[3:4]
     if not check1:
         if west and east:
-            newdf = zonedf[["East Out Temperature (C) of Our","West Out Temperature (C) of Our"]]
+            newdf = zonedf[["East Out Temperature (C) of TRPO MPI","West Out Temperature (C) of TRPO MPI"]]
             return newdf.columns[0:2]
         elif west:
             return zonedf.columns[0:1]
@@ -335,7 +338,7 @@ def gety3index(check1, check2, selectzone, zonedf):
             return zonedf.columns[3:4]
     if not check1:
         if west and east:
-            newdf = zonedf[["East Zone Real Temperature(C) of Our","West Zone Real Temperature(C) of Our"]]
+            newdf = zonedf[["East Zone Real Temperature(C) of TRPO MPI","West Zone Real Temperature(C) of TRPO MPI"]]
             return newdf.columns[0:2]
         elif west:
             return zonedf.columns[0:1]
@@ -370,7 +373,7 @@ def gety4index(check1, check2, selectzone, zonedf):
             return zonedf.columns[3:4]
     if not check1:
         if west and east:
-            newdf = zonedf[["East Zone Supply Fan Rate of Our","West Zone Supply Fan Rate of Our"]]
+            newdf = zonedf[["East Zone Supply Fan Rate of TRPO MPI","West Zone Supply Fan Rate of TRPO MPI"]]
             return newdf.columns[0:2]
         elif west:
             return zonedf.columns[0:1]
@@ -392,12 +395,20 @@ def dynamicPlot(weeks):
     Outmeters = ['West Temperature', 'East Temperature']
     check1 = st.checkbox("Baseline")
     check2 = st.checkbox("TRPO MPI")
+    st.markdown("""
+        - Baseline is a linear non-trivial control algorithm which surpassed dummy agent performance. 
+        - TRPO MPI is our Reinforcement Learning based control algorithm.
+    """)
 
     gas = st.selectbox('Evaluation Gas', ('CO2', 'CO', 'CH4', 'PM2.5', 'SO2', 'NOx'))   
-    selectzone = st.multiselect('Select HVAC Temperature Parameters ', Parameters, default=['HVAC West Temperature'])
-    fanmass = st.multiselect('Select Zone Fan Parameters',Fanmeters, default=['West Zone Supply Fan Rate'])
+    # selectzone = st.multiselect('Select HVAC Temperature Parameters ', Parameters, default=['HVAC West Temperature'])
+    selectzone = st.multiselect('Select HVAC Temperature Parameters ', Parameters)
 
-    outtemperatre = st.multiselect('Select Output Temperatures ', Outmeters, default=['West Temperature'])
+    # fanmass = st.multiselect('Select Zone Fan Parameters',Fanmeters, default=['West Zone Supply Fan Rate'])
+    fanmass = st.multiselect('Select Zone Fan Parameters',Fanmeters)
+
+    # outtemperatre = st.multiselect('Select Output Temperatures ', Outmeters, default=['West Temperature'])
+    outtemperatre = st.multiselect('Select Output Temperatures ', Outmeters)
 
     placeholder = st.empty()
     Timestep = len(df)
@@ -461,7 +472,7 @@ def dynamicPlot(weeks):
                 "WEST ZONE:Zone Air Temperature [C](TimeStep)_our":
                 "West Zone Real Temperature(C) of TRPO MPI",
                 "WEST ZONE:Zone Air Temperature [C](TimeStep)_easy":
-                "West Zone Real Temperature(C)  of Baseline",
+                "West Zone Real Temperature(C) of Baseline",
                 "EAST ZONE:Zone Air Temperature [C](TimeStep)_our":
                 "East Zone Real Temperature(C) of TRPO MPI",
                 "EAST ZONE:Zone Air Temperature [C](TimeStep)_easy":
@@ -503,7 +514,7 @@ def dynamicPlot(weeks):
                             range=[0,move_length],
                             title = "Real-time CO2 Emission Equivalent Mass Monitor"
                             )
-            fig.update_yaxes(range=[0,32])
+            # fig.update_yaxes(range=[0,32])
             # fig.addtrace(bbasedf, x = 'Date/Time', y=basedf.columms[5:6])
             st.plotly_chart(fig, use_container_width=True)
 
@@ -545,10 +556,6 @@ def dynamicPlot(weeks):
                 title = "Real-time West/East Zone Real Temperature Monitor"
                 )
             st.plotly_chart(fig3, use_container_width=True)
-            
-
-
-            
             
 
             time.sleep(0.1)
