@@ -56,7 +56,7 @@ format = "%m-%d %H:%M:%S"
 
 # df = pd.read_csv("util/pages/RL_new.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
 # easydf = pd.read_csv("util/pages/easy_agent_data.csv", parse_dates=['Date/Time'], infer_datetime_format=format)
-df = pd.read_csv("RL_final_v3.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
+df = pd.read_csv("RL_final_v5.csv", parse_dates=['Date/Time'],infer_datetime_format=format)
 cur_var = 1
 
 if 'cur' not in st.session_state:
@@ -242,12 +242,7 @@ def staticPlot(weeks):
                 tickformat=format,
                 title = "Real-time West/East Zone Real Temperature Monitor"
                 )
-
-            st.plotly_chart(fig3, use_container_width=True)
-        
-
-            
-            
+            st.plotly_chart(fig3, use_container_width=True)       
         
     if 'cur' not in st.session_state:
         st.session_state['cur'] = 1
@@ -401,14 +396,14 @@ def dynamicPlot(weeks):
     """)
 
     gas = st.selectbox('Evaluation Gas', ('CO2', 'CO', 'CH4', 'PM2.5', 'SO2', 'NOx'))   
-    # selectzone = st.multiselect('Select HVAC Temperature Parameters ', Parameters, default=['HVAC West Temperature'])
-    selectzone = st.multiselect('Select HVAC Temperature Parameters ', Parameters)
+    selectzone = st.multiselect('Select HVAC Temperature Parameters ', Parameters, default=['HVAC West Temperature'])
+    # selectzone = st.multiselect('Select HVAC Temperature Parameters ', Parameters)
 
-    # fanmass = st.multiselect('Select Zone Fan Parameters',Fanmeters, default=['West Zone Supply Fan Rate'])
-    fanmass = st.multiselect('Select Zone Fan Parameters',Fanmeters)
+    fanmass = st.multiselect('Select Zone Fan Parameters',Fanmeters, default=['West Zone Supply Fan Rate'])
+    # fanmass = st.multiselect('Select Zone Fan Parameters',Fanmeters)
 
-    # outtemperatre = st.multiselect('Select Output Temperatures ', Outmeters, default=['West Temperature'])
-    outtemperatre = st.multiselect('Select Output Temperatures ', Outmeters)
+    outtemperatre = st.multiselect('Select Output Temperatures ', Outmeters, default=['West Temperature'])
+    # outtemperatre = st.multiselect('Select Output Temperatures ', Outmeters)
 
     placeholder = st.empty()
     Timestep = len(df)
@@ -432,13 +427,12 @@ def dynamicPlot(weeks):
                 plotdf = df[int((i-move_length)*length/Timestep):int(i*length/Timestep)]
 
             kpi1.metric(
-                label = "Our Carbon CO2 Emission Rate Running Average (kg/h)",
-                value = round(np.average(plotdf['Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_our']),2)
+                label = "Our " + str(gas) + " Emission Rate Running Average (kg/h)",
+                value = round(np.average(getGas(gas, plotdf).iloc[:,0]),3)
             )
             kpi2.metric(
-                label = "Baseline CO2 Emisson Data Running Average (kg/h)",
-                value = round(np.average(plotdf['Site:Environmental Impact Total CO2 Emissions Carbon Equivalent Mass [kg](Hourly)_easy'
-                ]),2)
+                label = "Baseline" + str(gas) + " Emisson Data Running Average (kg/h)",
+                value = round(np.average(getGas(gas, plotdf).iloc[:,0]),3)
             )
 
                 # basedf = easydf[int((i-5)*length/Timestep):int(i*length/Timestep)]
@@ -607,7 +601,7 @@ def data_page():
     st.sidebar.markdown('## Weeks')
     weeks = st.sidebar.slider('Weeks', min_value=1,
                               max_value=52, value=(1,2), step=1)
-    df = pd.read_csv('util/pages/newmtr.csv')
+    df = pd.read_csv('./util/pages/newmtr.csv')
     X = df['Date/Time']
 
 
@@ -618,9 +612,8 @@ def data_page():
             write_st_end()
 
     elif mode == 'Dynamic':
-        with _lock:
-            dynamicPlot(weeks)
-            write_st_end()
+        dynamicPlot(weeks)
+        write_st_end()
 
         pass
 
