@@ -1,5 +1,5 @@
 # streamweb
-VE450 Web page
+A Dynamic Streamlit Visualization Project.
 
 
 The website for our capstone project.
